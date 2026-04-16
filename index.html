@@ -894,14 +894,18 @@ function doLogin(){
   const u=USERS[id];
   if(!u||u.pw!==pw){err.textContent='IDまたはパスワードが正しくありません';return;}
   err.textContent='';CU={id,role:u.role};
-  // 同期コード未設定なら初回セットアップを促す（管理者は除く）
+  // 同期できる状態かチェック（GistユーザーとIDが両方揃っているか）
+  const canSync=!!getRawGistUrl();
   const proceed=async()=>{
-    showSyncBanner(true);
-    await autoPullFromGist();
-    showSyncBanner(false);
+    if(canSync){
+      showSyncBanner(true);
+      await autoPullFromGist();
+      showSyncBanner(false);
+    }
     if(u.role==='admin') showAdmin(); else showMain();
   };
-  if(u.role!=='admin'&&!localStorage.getItem('aegis_gist_id')){
+  // 一般ユーザーで同期設定が不完全なら初回セットアップを促す
+  if(u.role!=='admin'&&!canSync){
     checkSyncSetup(proceed);
   }else{
     proceed();
@@ -1717,12 +1721,8 @@ async function autoPullFromGist(){
 let _postSyncCallback=null;
 function checkSyncSetup(callback){
   _postSyncCallback=callback;
-  if(!localStorage.getItem('aegis_gist_id')){
-    const m=document.getElementById('syncSetupModal');
-    if(m)m.style.display='flex';
-  }else{
-    callback();
-  }
+  const m=document.getElementById('syncSetupModal');
+  if(m)m.style.display='flex';
 }
 async function applySyncCode(){
   const code=document.getElementById('syncCodeInput').value.trim();
