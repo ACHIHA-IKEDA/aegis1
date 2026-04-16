@@ -505,6 +505,20 @@ footer b{color:rgba(107,138,173,.75);}
   </div>
 </div>
 
+<!-- 初回同期コード入力モーダル -->
+<div id="syncSetupModal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;">
+  <div style="background:rgba(8,15,40,.97);border:1px solid rgba(0,212,255,.25);border-radius:18px;padding:28px 24px;max-width:380px;width:92%;box-shadow:0 8px 48px rgba(0,0,0,.6);">
+    <div style="font-family:var(--din);font-size:1rem;letter-spacing:3px;color:var(--c);margin-bottom:8px;">☁️ SYNC SETUP</div>
+    <p style="font-size:.82rem;color:rgba(255,255,255,.75);margin-bottom:16px;line-height:1.6;">管理者から受け取った「同期コード」を入力してください。<br>一度設定すれば、次回以降は自動で最新データを取得します。</p>
+    <div class="form-g"><label>同期コード（Gist ID）</label><input type="text" id="syncCodeInput" placeholder="管理者から受け取ったコードを貼り付け" style="font-size:.78rem;"></div>
+    <div style="display:flex;gap:10px;margin-top:4px;">
+      <button class="btn btn-gr btn-md" style="flex:1;" onclick="applySyncCode()">設定して同期</button>
+      <button class="btn btn-glass btn-sm" onclick="skipSyncSetup()">スキップ</button>
+    </div>
+    <p style="font-size:.7rem;color:var(--gr);margin-top:10px;">※ スキップした場合はローカルデータのみ使用されます。後で管理者画面→設定から設定できます。</p>
+  </div>
+</div>
+
 <!-- ══════════════════════════════════════════════
      MAIN SCREEN
 ══════════════════════════════════════════════ -->
@@ -541,6 +555,9 @@ footer b{color:rgba(107,138,173,.75);}
         </div>
         <div class="hdr-meta-seg">
           <span class="sb-online">● ONLINE</span>
+        </div>
+        <div class="hdr-meta-seg" id="syncStatusSeg" style="display:none;">
+          <span id="syncStatusTxt" style="font-family:var(--din);font-size:.6rem;letter-spacing:1px;color:var(--c);">☁️ 同期中...</span>
         </div>
       </div>
       <div class="topbar-r">
@@ -764,10 +781,18 @@ Googleマップリンク:
           ② <a href="https://gist.github.com" target="_blank" rel="noopener" style="color:var(--c);">gist.github.com</a> でプライベートGistを新規作成（ファイル名: <b>aegis_sync.json</b>、内容は <b>{}</b> でOK）<br>
           ③ GistのURLの末尾ID（例: <code style="color:var(--y);">a1b2c3d4e5f6...</code>）と発行したトークンを以下に入力して保存
         </p>
-        <div class="form-g"><label>GitHub Personal Access Token</label><input type="password" id="cfg_ghtoken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off"></div>
+        <div class="form-g"><label>GitHub ユーザー名</label><input type="text" id="cfg_ghuser" placeholder="例: your-github-username" autocomplete="off"></div>
+        <div class="form-g"><label>GitHub Personal Access Token（書き込み用・管理者のみ）</label><input type="password" id="cfg_ghtoken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off"></div>
         <div class="form-g"><label>Gist ID</label><input type="text" id="cfg_gistid" placeholder="a1b2c3d4e5f6g7h8i9j0..."></div>
         <button class="btn btn-gr btn-sm" onclick="saveGistCfg()" style="margin-bottom:14px;">設定を保存</button>
         <span id="gistCfgOk" style="font-size:.75rem;color:var(--d1);margin-left:8px;display:none;">✓ 保存しました</span>
+        <div id="syncCodeWrap" style="display:none;background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.2);border-radius:10px;padding:12px;margin-bottom:12px;">
+          <p style="font-size:.75rem;color:var(--gr);margin-bottom:8px;">📣 以下の「同期コード」を社員に共有してください（Slack・メール等）<br>社員はこのコードを入力するだけで自動同期が有効になります。</p>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <code id="syncCodeVal" style="font-size:.8rem;color:var(--y);background:rgba(255,255,255,.06);padding:6px 10px;border-radius:7px;flex:1;word-break:break-all;"></code>
+            <button class="btn btn-glass btn-sm" onclick="copySyncCode()">コピー</button>
+          </div>
+        </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;">
           <button class="btn btn-gr btn-md" onclick="pushToGist()">☁️ クラウドに保存（Push）</button>
           <button class="btn btn-c btn-md" onclick="pullFromGist()">☁️ クラウドから読み込む（Pull）</button>
@@ -869,7 +894,18 @@ function doLogin(){
   const u=USERS[id];
   if(!u||u.pw!==pw){err.textContent='IDまたはパスワードが正しくありません';return;}
   err.textContent='';CU={id,role:u.role};
-  if(u.role==='admin') showAdmin(); else showMain();
+  // 同期コード未設定なら初回セットアップを促す（管理者は除く）
+  const proceed=async()=>{
+    showSyncBanner(true);
+    await autoPullFromGist();
+    showSyncBanner(false);
+    if(u.role==='admin') showAdmin(); else showMain();
+  };
+  if(u.role!=='admin'&&!localStorage.getItem('aegis_gist_id')){
+    checkSyncSetup(proceed);
+  }else{
+    proceed();
+  }
 }
 function doLogout(){CU=null;document.getElementById('li_id').value='';document.getElementById('li_pw').value='';showScreen('loginScreen');}
 ['li_pw','li_id'].forEach(id=>document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();}));
@@ -1555,11 +1591,26 @@ function loadGistCfg(){
 function saveGistCfg(){
   const token=document.getElementById('cfg_ghtoken').value.trim();
   const gistId=document.getElementById('cfg_gistid').value.trim();
-  if(!token||!gistId){alert('TokenとGist IDの両方を入力してください');return;}
+  const ghUser=document.getElementById('cfg_ghuser').value.trim();
+  if(!token||!gistId||!ghUser){alert('GitHubユーザー名・Token・Gist IDの3つをすべて入力してください');return;}
   localStorage.setItem('aegis_gh_token',token);
   localStorage.setItem('aegis_gist_id',gistId);
+  localStorage.setItem('aegis_gist_user',ghUser);
   const ok=document.getElementById('gistCfgOk');
   ok.style.display='inline';setTimeout(()=>ok.style.display='none',2500);
+  updateSyncCodeDisplay();
+}
+function updateSyncCodeDisplay(){
+  const gistId=localStorage.getItem('aegis_gist_id')||'';
+  const w=document.getElementById('syncCodeWrap');
+  const v=document.getElementById('syncCodeVal');
+  if(w&&v&&gistId){w.style.display='block';v.textContent=gistId;}
+}
+function copySyncCode(){
+  const code=document.getElementById('syncCodeVal').textContent;
+  if(!code)return;
+  navigator.clipboard.writeText(code).catch(()=>{});
+  const btn=event.target;btn.textContent='✓ コピー完了';setTimeout(()=>btn.textContent='コピー',2000);
 }
 function gistStatus(msg,color){
   const el=document.getElementById('gistStatus');
@@ -1572,6 +1623,8 @@ function buildSyncBundle(){
     aegis_hints:loadHints(),
     aegis_ver:loadVer(),
     aegis_data_ver:DATA_VER,
+    aegis_gist_user:localStorage.getItem('aegis_gist_user')||'',
+    aegis_gist_id:localStorage.getItem('aegis_gist_id')||'',
     exported_at:new Date().toISOString()
   };
 }
@@ -1622,9 +1675,76 @@ async function pullFromGist(){
 // 管理者画面を開いた時にGist設定を反映
 function loadGistCfgToForm(){
   const{token,gistId}=loadGistCfg();
-  const t=document.getElementById('cfg_ghtoken');const g=document.getElementById('cfg_gistid');
+  const ghUser=localStorage.getItem('aegis_gist_user')||'';
+  const t=document.getElementById('cfg_ghtoken');
+  const g=document.getElementById('cfg_gistid');
+  const u=document.getElementById('cfg_ghuser');
   if(t&&token)t.value=token;
   if(g&&gistId)g.value=gistId;
+  if(u&&ghUser)u.value=ghUser;
+  updateSyncCodeDisplay();
+}
+
+/* ─ 読み取り専用URL（トークン不要） ─ */
+function getRawGistUrl(){
+  const user=localStorage.getItem('aegis_gist_user')||'';
+  const gistId=localStorage.getItem('aegis_gist_id')||'';
+  if(!user||!gistId)return null;
+  return`https://gist.githubusercontent.com/${user}/${gistId}/raw/aegis_sync.json`;
+}
+
+async function autoPullFromGist(){
+  const url=getRawGistUrl();
+  if(!url)return false;
+  try{
+    const res=await fetch(url+'?t='+Date.now());
+    if(!res.ok)return false;
+    const b=await res.json();
+    if(!b.aegis_data||!Array.isArray(b.aegis_data))return false;
+    localStorage.setItem('aegis_data',JSON.stringify(b.aegis_data));
+    if(b.aegis_mst)localStorage.setItem('aegis_mst',JSON.stringify(b.aegis_mst));
+    if(b.aegis_hints)localStorage.setItem('aegis_hints',JSON.stringify(b.aegis_hints));
+    if(b.aegis_ver)localStorage.setItem('aegis_ver',b.aegis_ver);
+    // Pull先にもGist設定を自動伝播
+    if(b.aegis_gist_user)localStorage.setItem('aegis_gist_user',b.aegis_gist_user);
+    if(b.aegis_gist_id)localStorage.setItem('aegis_gist_id',b.aegis_gist_id);
+    localStorage.setItem('aegis_data_ver',DATA_VER);
+    return b.aegis_data.length;
+  }catch(e){return false;}
+}
+
+/* ─ 初回同期コード入力 ─ */
+let _postSyncCallback=null;
+function checkSyncSetup(callback){
+  _postSyncCallback=callback;
+  if(!localStorage.getItem('aegis_gist_id')){
+    const m=document.getElementById('syncSetupModal');
+    if(m)m.style.display='flex';
+  }else{
+    callback();
+  }
+}
+async function applySyncCode(){
+  const code=document.getElementById('syncCodeInput').value.trim();
+  if(!code){alert('同期コードを入力してください');return;}
+  localStorage.setItem('aegis_gist_id',code);
+  const m=document.getElementById('syncSetupModal');if(m)m.style.display='none';
+  // Pull して gist_user も自動取得
+  showSyncBanner(true);
+  const count=await autoPullFromGist();
+  showSyncBanner(false);
+  if(count===false)alert('同期コードが正しくないか、データをまだ Push していません。ローカルデータで続行します。');
+  if(_postSyncCallback)_postSyncCallback();
+}
+function skipSyncSetup(){
+  const m=document.getElementById('syncSetupModal');if(m)m.style.display='none';
+  if(_postSyncCallback)_postSyncCallback();
+}
+
+/* ─ 同期中バナー ─ */
+function showSyncBanner(show){
+  const seg=document.getElementById('syncStatusSeg');
+  if(seg)seg.style.display=show?'flex':'none';
 }
 
 /* ═══════════════════════════════════════════
