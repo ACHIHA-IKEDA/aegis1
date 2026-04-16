@@ -587,11 +587,11 @@ footer b{color:rgba(107,138,173,.75);}
         </div>
         <div class="ai-links-title" id="lbl_aiopen">外部AIで開く</div>
         <div class="ai-links">
-          <a class="ai-lnk" href="https://chat.openai.com" onclick="window.open(this.href,'_ai_'+Date.now());return false;" rel="noopener"><span>🤖</span>ChatGPT</a>
-          <a class="ai-lnk" href="https://claude.ai" onclick="window.open(this.href,'_ai_'+Date.now());return false;" rel="noopener"><span>⚡</span>Claude</a>
-          <a class="ai-lnk" href="https://gemini.google.com" onclick="window.open(this.href,'_ai_'+Date.now());return false;" rel="noopener"><span>✨</span>Gemini</a>
-          <a class="ai-lnk" href="https://copilot.microsoft.com" onclick="window.open(this.href,'_ai_'+Date.now());return false;" rel="noopener"><span>🪟</span>Copilot</a>
-          <a class="ai-lnk" href="https://www.perplexity.ai" onclick="window.open(this.href,'_ai_'+Date.now());return false;" rel="noopener"><span>🔍</span>Perplexity</a>
+          <a class="ai-lnk" href="https://chat.openai.com" target="_blank" rel="noopener noreferrer" onclick="this.target='_ai_'+Date.now()"><span>🤖</span>ChatGPT</a>
+          <a class="ai-lnk" href="https://claude.ai" target="_blank" rel="noopener noreferrer" onclick="this.target='_ai_'+Date.now()"><span>⚡</span>Claude</a>
+          <a class="ai-lnk" href="https://gemini.google.com" target="_blank" rel="noopener noreferrer" onclick="this.target='_ai_'+Date.now()"><span>✨</span>Gemini</a>
+          <a class="ai-lnk" href="https://copilot.microsoft.com" target="_blank" rel="noopener noreferrer" onclick="this.target='_ai_'+Date.now()"><span>🪟</span>Copilot</a>
+          <a class="ai-lnk" href="https://www.perplexity.ai" target="_blank" rel="noopener noreferrer" onclick="this.target='_ai_'+Date.now()"><span>🔍</span>Perplexity</a>
         </div>
       </div>
     </div>
@@ -1148,7 +1148,13 @@ ${rsnTxt}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 [ANALYSIS REQUEST]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚠️ [IMPORTANT: Response Format]
+⚠️ [IMPORTANT: URL Rules & Response Format]
+[ABSOLUTE URL RULES]
+- Only include URLs that are real and verified. Fabricating or guessing URLs is strictly prohibited.
+- If you cannot provide a real, working URL for a news article, report, or video — omit that entry entirely. Do NOT write "search for X" or "URL unknown" as a substitute. No link = no entry.
+- Official agency homepages (osha.gov, mhlw.go.jp, etc.) may be cited as general references. If a direct link to a specific document is unknown, omit that specific document.
+
+[RESPONSE FORMAT]
 Begin your response with a "[OVERALL CONCLUSION & TOP RISKS]" section (max 150 words).
 Summarize the most critical risk, the #1 immediate action required, and the key finding — written for a site manager to read first.
 Then proceed to the detailed sections below.
@@ -1157,15 +1163,15 @@ Based on the above, please provide a detailed safety risk analysis report coveri
 
 1. [Domestic (Japan) Accident Cases]
    - Similar serious/fatal accidents in Japan (year, location, summary, casualties, causes)
-   - Official reports/statistics from MHLW, MLIT, Fire Agency etc. (must include direct access URLs, e.g. https://www.mhlw.go.jp/...)
-   - News coverage from NHK, Nikkei etc. (must include article URLs; if URL unknown, provide publication name, year, and article title)
-   - YouTube/video links for related accident footage or safety training videos — provide direct URLs (e.g. https://www.youtube.com/watch?v=XXXXX); if URL unknown, provide video title, channel name, and search keywords
+   - Official reports/statistics from MHLW, MLIT, Fire Agency etc. (real URLs only, e.g. https://www.mhlw.go.jp/bunya/roudoukijun/anzeneisei.html; omit if specific URL unknown)
+   - News coverage from NHK, Nikkei etc. (real article URLs only; omit any article where URL cannot be confirmed)
+   - YouTube/video links: real URLs only (e.g. https://www.youtube.com/watch?v=XXXXX); if URL unknown, provide video title, channel name, and search keywords instead
 
 2. [International Accident Cases]
    - Similar accidents in the US, Europe, Asia etc. (country, year, summary, casualties, causes)
-   - International agency reports: OSHA, ILO, EU-OSHA etc. (must include direct access URLs, e.g. https://www.osha.gov/...)
-   - International news and accident investigation reports (must include article/report URLs; if URL unknown, provide source name, year, and title)
-   - YouTube/international safety training video links — provide direct URLs (e.g. https://www.youtube.com/watch?v=XXXXX); if URL unknown, provide video title, channel name, and search keywords
+   - International agency reports: OSHA, ILO, EU-OSHA etc. (real URLs only, e.g. https://www.osha.gov/publications; omit if specific URL unknown)
+   - International news and accident investigation reports (real article/report URLs only; omit any article where URL cannot be confirmed)
+   - YouTube/international safety training videos: real URLs only; if URL unknown, provide video title, channel name, and search keywords instead
 
 3. [Deep Analysis of Non-Compliance with Preventive Measures]
    - Recorded reasons for non-compliance: ${rsnTxt}
@@ -1219,7 +1225,13 @@ ${rsnTxt}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 【解析依頼】
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚠️ 【重要:回答フォーマット指定】
+⚠️ 【重要:回答フォーマット・URLルール】
+【URLに関する絶対ルール】
+・実在・アクセス確認済みのURLのみ記載すること。架空URL・不確かなURLの捏造は絶対禁止。
+・ニュース記事・事故報告書・動画など、実在するURLを提示できない情報は項目ごと省くこと。「URL不明」「検索してください」等の代替表記も不可。リンクが出せない事例は記載しない。
+・公式機関サイト（mhlw.go.jp、osha.gov等）のトップURLや公開ページは記載可。特定記事への直リンクが不明な場合は省略。
+
+【回答フォーマット】
 回答の冒頭に必ず「【総合結論・最優先リスク】」セクションを200字以内で設けること。
 現場管理者が最初に読むべき結論・最重要リスク・即座に取るべきアクションを端的にまとめる。
 その後に各詳細項目を記述すること。
@@ -1228,15 +1240,15 @@ ${rsnTxt}
 
 1. 【日本国内の同種事故事例】
    ・上記条件に類似した国内の重大事故・死亡事故事例（発生年・場所・概要・死傷者数・原因）
-   ・厚生労働省・国土交通省・消防庁等の公式レポート・統計データ（必ず直接アクセスできるURLを記載。例:https://www.mhlw.go.jp/...）
-   ・NHKニュース・日本経済新聞等の報道事例（必ず記事のURLリンクを記載すること。URL不明な場合は掲載年・媒体・記事タイトルを明記）
-   ・関連するYouTube動画・ニュース映像・事故解説動画は直接視聴できるURLリンクを記載すること（例:https://www.youtube.com/watch?v=XXXXX）。URL不明な場合は動画タイトル・チャンネル名・検索キーワードを提示
+   ・厚生労働省・国土交通省・消防庁等の公式レポート・統計データ（実在するURLのみ記載。例:https://www.mhlw.go.jp/bunya/roudoukijun/anzeneisei.html）
+   ・NHKニュース・日本経済新聞等の報道事例（実在する記事URLのみ記載。URL確認できない記事は省く）
+   ・関連するYouTube動画・ニュース映像・事故解説動画（実在する動画URLのみ記載。例:https://www.youtube.com/watch?v=XXXXX。URL不明な場合は動画タイトル・チャンネル名・検索キーワードのみ提示）
 
 2. 【海外の同種事故事例】
    ・米国・欧州・アジア等での類似重大事故事例（発生国・年・概要・死傷者数・原因）
-   ・OSHA・ILO・EU-OSHA等の国際機関レポート（必ず直接アクセスできるURLを記載。例:https://www.osha.gov/...）
-   ・海外ニュース・事故調査報告書（必ず記事・レポートのURLリンクを記載すること。URL不明な場合は媒体名・掲載年・記事タイトルを明記）
-   ・関連するYouTube動画・海外事故映像・安全教育動画は直接視聴できるURLリンクを記載すること（例:https://www.youtube.com/watch?v=XXXXX）。URL不明な場合は動画タイトル・チャンネル名・検索キーワードを提示
+   ・OSHA・ILO・EU-OSHA等の国際機関レポート（実在するURLのみ記載。例:https://www.osha.gov/publications）
+   ・海外ニュース・事故調査報告書（実在する記事・レポートURLのみ記載。URL確認できない記事は省く）
+   ・関連するYouTube動画・海外事故映像・安全教育動画（実在する動画URLのみ記載。URL不明な場合は動画タイトル・チャンネル名・検索キーワードのみ提示）
 
 3. 【防止策不履行の深層分析】
    ・社内データに記録された不履行理由: ${rsnTxt}
