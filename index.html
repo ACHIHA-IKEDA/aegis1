@@ -756,7 +756,32 @@ Googleマップリンク:
         <div class="fsec">システムバージョン管理</div>
         <div class="form-g"><label>バージョン番号</label><input type="text" id="cfg_ver" placeholder="例: v1.2.0"></div>
         <button class="btn btn-gr btn-md" onclick="saveVersion()">保存する</button>
-        <div class="fsec" style="margin-top:24px;">データエクスポート</div>
+        <div class="fsec" style="margin-top:24px;">☁️ クラウド同期（GitHub Gist）</div>
+        <p style="font-size:.8rem;color:var(--gr);margin-bottom:10px;">
+          GitHub Gist をクラウドDBとして使い、管理者間でデータを共有します。GitHub・会社サーバーどちらでも動作します。<br>
+          <b style="color:rgba(0,212,255,.8);">【初回設定手順】</b><br>
+          ① <a href="https://github.com/settings/tokens/new?scopes=gist" target="_blank" rel="noopener" style="color:var(--c);">GitHub → Settings → Personal Access Token</a> を発行（scopeは<b>gist</b>のみでOK）<br>
+          ② <a href="https://gist.github.com" target="_blank" rel="noopener" style="color:var(--c);">gist.github.com</a> でプライベートGistを新規作成（ファイル名: <b>aegis_sync.json</b>、内容は <b>{}</b> でOK）<br>
+          ③ GistのURLの末尾ID（例: <code style="color:var(--y);">a1b2c3d4e5f6...</code>）と発行したトークンを以下に入力して保存
+        </p>
+        <div class="form-g"><label>GitHub Personal Access Token</label><input type="password" id="cfg_ghtoken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off"></div>
+        <div class="form-g"><label>Gist ID</label><input type="text" id="cfg_gistid" placeholder="a1b2c3d4e5f6g7h8i9j0..."></div>
+        <button class="btn btn-gr btn-sm" onclick="saveGistCfg()" style="margin-bottom:14px;">設定を保存</button>
+        <span id="gistCfgOk" style="font-size:.75rem;color:var(--d1);margin-left:8px;display:none;">✓ 保存しました</span>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;">
+          <button class="btn btn-gr btn-md" onclick="pushToGist()">☁️ クラウドに保存（Push）</button>
+          <button class="btn btn-c btn-md" onclick="pullFromGist()">☁️ クラウドから読み込む（Pull）</button>
+        </div>
+        <div id="gistStatus" style="font-size:.78rem;margin-top:8px;color:var(--gr);min-height:1.2em;"></div>
+        <div class="fsec" style="margin-top:24px;">デバイス間データ同期（ローカル）</div>
+        <p style="font-size:.8rem;color:var(--gr);margin-bottom:12px;">
+          クラウド同期が使えない場合のファイルベース手動同期です。
+        </p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-glass btn-md" onclick="exportSyncJSON()">📤 JSONエクスポート</button>
+          <button class="btn btn-glass btn-md" onclick="importSyncJSON()">📥 JSONインポート</button>
+        </div>
+        <div class="fsec" style="margin-top:24px;">テキストエクスポート</div>
         <p style="font-size:.8rem;color:var(--gr);margin-bottom:12px;">全学習データをテキストファイル（.txt）としてダウンロードします。取込フォーマットと同一形式で出力されます。</p>
         <button class="btn btn-c btn-md" onclick="exportData()">📤 テキストデータとして出力</button>
         <div class="fsec" style="margin-top:24px;">データ管理</div>
@@ -870,6 +895,7 @@ function showAdmin(){
   renderDataList();
   renderMasters();
   document.getElementById('cfg_ver').value=loadVer();
+  loadGistCfgToForm();
 }
 
 /* ═══════════════════════════════════════════
@@ -1518,6 +1544,139 @@ function exportData(){
 }
 
 /* ═══════════════════════════════════════════
+   SYNC – GitHub Gist クラウド同期
+═══════════════════════════════════════════ */
+function loadGistCfg(){
+  return{
+    token:localStorage.getItem('aegis_gh_token')||'',
+    gistId:localStorage.getItem('aegis_gist_id')||''
+  };
+}
+function saveGistCfg(){
+  const token=document.getElementById('cfg_ghtoken').value.trim();
+  const gistId=document.getElementById('cfg_gistid').value.trim();
+  if(!token||!gistId){alert('TokenとGist IDの両方を入力してください');return;}
+  localStorage.setItem('aegis_gh_token',token);
+  localStorage.setItem('aegis_gist_id',gistId);
+  const ok=document.getElementById('gistCfgOk');
+  ok.style.display='inline';setTimeout(()=>ok.style.display='none',2500);
+}
+function gistStatus(msg,color){
+  const el=document.getElementById('gistStatus');
+  if(el){el.textContent=msg;el.style.color=color||'var(--gr)';}
+}
+function buildSyncBundle(){
+  return{
+    aegis_data:loadData(),
+    aegis_mst:loadMST(),
+    aegis_hints:loadHints(),
+    aegis_ver:loadVer(),
+    aegis_data_ver:DATA_VER,
+    exported_at:new Date().toISOString()
+  };
+}
+async function pushToGist(){
+  const{token,gistId}=loadGistCfg();
+  if(!token||!gistId){alert('先にGist設定（TokenとGist ID）を入力して保存してください');return;}
+  gistStatus('☁️ アップロード中...','var(--c)');
+  try{
+    const content=JSON.stringify(buildSyncBundle(),null,2);
+    const res=await fetch(`https://api.github.com/gists/${gistId}`,{
+      method:'PATCH',
+      headers:{'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json','Content-Type':'application/json'},
+      body:JSON.stringify({files:{'aegis_sync.json':{content}}})
+    });
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    gistStatus('✓ クラウドに保存しました（'+new Date().toLocaleTimeString('ja-JP')+'）','var(--d1)');
+  }catch(e){
+    gistStatus('✗ 保存失敗: '+e.message,'var(--d3)');
+  }
+}
+async function pullFromGist(){
+  const{token,gistId}=loadGistCfg();
+  if(!token||!gistId){alert('先にGist設定（TokenとGist ID）を入力して保存してください');return;}
+  gistStatus('☁️ ダウンロード中...','var(--c)');
+  try{
+    const res=await fetch(`https://api.github.com/gists/${gistId}`,{
+      headers:{'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json'}
+    });
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const json=await res.json();
+    const fileContent=json.files?.['aegis_sync.json']?.content;
+    if(!fileContent)throw new Error('aegis_sync.json が見つかりません');
+    const b=JSON.parse(fileContent);
+    if(!b.aegis_data||!Array.isArray(b.aegis_data))throw new Error('データ形式が不正です');
+    const dt=b.exported_at?new Date(b.exported_at).toLocaleString('ja-JP'):'不明';
+    if(!confirm(`クラウドのデータを読み込みますか？\n\n保存日時: ${dt}\nデータ件数: ${b.aegis_data.length}件\n\n※現在のローカルデータは上書きされます`))return;
+    if(b.aegis_data)localStorage.setItem('aegis_data',JSON.stringify(b.aegis_data));
+    if(b.aegis_mst)localStorage.setItem('aegis_mst',JSON.stringify(b.aegis_mst));
+    if(b.aegis_hints)localStorage.setItem('aegis_hints',JSON.stringify(b.aegis_hints));
+    if(b.aegis_ver)localStorage.setItem('aegis_ver',b.aegis_ver);
+    localStorage.setItem('aegis_data_ver',DATA_VER);
+    renderDataList();updateSysbar();
+    gistStatus('✓ 読み込み完了（'+b.aegis_data.length+'件・'+new Date().toLocaleTimeString('ja-JP')+'）','var(--d1)');
+  }catch(e){
+    gistStatus('✗ 読み込み失敗: '+e.message,'var(--d3)');
+  }
+}
+// 管理者画面を開いた時にGist設定を反映
+function loadGistCfgToForm(){
+  const{token,gistId}=loadGistCfg();
+  const t=document.getElementById('cfg_ghtoken');const g=document.getElementById('cfg_gistid');
+  if(t&&token)t.value=token;
+  if(g&&gistId)g.value=gistId;
+}
+
+/* ═══════════════════════════════════════════
+   SYNC – デバイス間JSONエクスポート／インポート
+═══════════════════════════════════════════ */
+function exportSyncJSON(){
+  const bundle={
+    aegis_data:loadData(),
+    aegis_mst:loadMST(),
+    aegis_hints:loadHints(),
+    aegis_ver:loadVer(),
+    aegis_data_ver:DATA_VER,
+    exported_at:new Date().toISOString(),
+    exported_device:navigator.userAgent.slice(0,80)
+  };
+  const blob=new Blob([JSON.stringify(bundle,null,2)],{type:'application/json;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='aegis_sync_'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+}
+
+function importSyncJSON(){
+  const input=document.createElement('input');
+  input.type='file';input.accept='.json,application/json';
+  input.onchange=e=>{
+    const file=e.target.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      try{
+        const b=JSON.parse(ev.target.result);
+        if(!b.aegis_data||!Array.isArray(b.aegis_data))throw new Error('invalid');
+        const dt=b.exported_at?new Date(b.exported_at).toLocaleString('ja-JP'):'不明';
+        const dev=b.exported_device||'不明';
+        if(!confirm(`同期データをインポートしますか？\n\nエクスポート日時: ${dt}\n送信元: ${dev}\nデータ件数: ${b.aegis_data.length}件\n\n※現在のデータはすべて上書きされます`))return;
+        if(b.aegis_data)localStorage.setItem('aegis_data',JSON.stringify(b.aegis_data));
+        if(b.aegis_mst)localStorage.setItem('aegis_mst',JSON.stringify(b.aegis_mst));
+        if(b.aegis_hints)localStorage.setItem('aegis_hints',JSON.stringify(b.aegis_hints));
+        if(b.aegis_ver)localStorage.setItem('aegis_ver',b.aegis_ver);
+        localStorage.setItem('aegis_data_ver',DATA_VER);
+        renderDataList();updateSysbar();
+        alert(`インポート完了しました\n${b.aegis_data.length}件のデータを読み込みました`);
+      }catch(err){
+        alert('インポートに失敗しました。\n有効なAEGIS同期ファイル（.json）を選択してください。');
+      }
+    };
+    reader.readAsText(file,'utf-8');
+  };
+  document.body.appendChild(input);input.click();document.body.removeChild(input);
+}
+
+/* ═══════════════════════════════════════════
    13. TAB SWITCH
 ═══════════════════════════════════════════ */
 function switchTab(t){
@@ -1528,7 +1687,7 @@ function switchTab(t){
     document.getElementById(bmap[k]).classList.toggle('on',k===t);
   });
   if(t==='form')fillAdminDropdowns();
-  if(t==='cfg')document.getElementById('cfg_ver').value=loadVer();
+  if(t==='cfg'){document.getElementById('cfg_ver').value=loadVer();loadGistCfgToForm();}
 }
 
 /* ═══════════════════════════════════════════
