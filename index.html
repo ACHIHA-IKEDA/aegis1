@@ -251,6 +251,14 @@ body::after{
 .lv1 .dname{color:var(--d1);}
 .lv2 .dname{color:var(--d2);}
 .lv3 .dname{color:var(--d3);}
+.warn-callout{
+  padding:10px 16px;border-radius:10px;
+  font-size:.9rem;font-weight:700;letter-spacing:.4px;
+  margin-top:6px;display:flex;align-items:center;gap:8px;line-height:1.45;
+}
+.warn-callout.lv1{background:rgba(0,230,118,.08);color:var(--d1);border:1px solid rgba(0,230,118,.25);}
+.warn-callout.lv2{background:rgba(255,171,64,.08);color:var(--d2);border:1px solid rgba(255,171,64,.28);}
+.warn-callout.lv3{background:rgba(255,82,82,.10);color:var(--d3);border:1px solid rgba(255,82,82,.30);}
 
 /* ACCORDION */
 .acc{margin-bottom:8px;border-radius:13px;overflow:hidden;}
@@ -1008,10 +1016,46 @@ function summarize(items){
 /* ═══════════════════════════════════════════
    8. RENDER RESULTS
 ═══════════════════════════════════════════ */
+function genWarning(place,weather,work,time,worker){
+  const mods=[];
+  if(time==='夜')mods.push('夜間');
+  else if(time==='早朝')mods.push('早朝');
+  if(weather==='雨')mods.push('雨天');
+  else if(weather==='雪')mods.push('降雪');
+  else if(weather==='強風')mods.push('強風下');
+  const hazardMap={
+    '電車輸送':'輸送トレーラーの転倒・横転',
+    '電車積載':'電車部材の落下・挟まれ',
+    'オンレール作業':'軌道内立入・列車接触',
+    '変圧器据付':'重量物落下・感電',
+    '風車部材輸送':'大型部材の積荷崩れ・接触',
+    '風車建設':'高所転落・落下物',
+    '風車メンテナンス':'高所転落・ブレード接触',
+    'クレーン操作':'クレーン転倒・吊り荷落下',
+    '高所作業':'転落・墜落',
+    '吊り上げ作業':'ワイヤー破断・吊り荷落下',
+  };
+  const placeMap={
+    '道路':'走行中の車両への接触',
+    '港':'岸壁・水域への転落',
+    '工場':'機械・設備との接触',
+    '風車サイト':'高所・回転体への接触',
+    '鉄道施設':'軌道・車両への接触',
+    '変電所':'高圧電気設備による感電',
+  };
+  const hazard=(work&&hazardMap[work])?hazardMap[work]:(place&&placeMap[place])?placeMap[place]:'予期せぬ事故';
+  const prefix=mods.length?mods.join('・')+'の':'';
+  const workLabel=work?`「${work}」中の`:'';
+  const workerSuffix=worker==='新人'?'（新人作業員は特に注意）':'';
+  return`${prefix}${workLabel}${hazard}に注意${workerSuffix}`;
+}
+
 function renderResults(major,minor,majorMsr,minorMsr,danger){
+  const s=lastDiagState;
   const lvCls='lv'+danger;
   const lvNames=['','低リスク','中リスク','高リスク（要注意）'];
   const stars='★'.repeat(danger)+'☆'.repeat(3-danger);
+  const warnText=genWarning(s.place,s.weather,s.work,s.time,s.worker);
   document.getElementById('r_dangerRow').innerHTML=
     `<div class="danger-row ${lvCls}">
        <div class="danger-stars">${stars}</div>
@@ -1019,7 +1063,8 @@ function renderResults(major,minor,majorMsr,minorMsr,danger){
          <div class="dlbl">DANGER LEVEL ${danger}</div>
          <div class="dname">${lvNames[danger]}</div>
        </div>
-     </div>`;
+     </div>
+     <div class="warn-callout ${lvCls}">⚠ ${warnText}</div>`;
 
   document.getElementById('r_major').innerHTML=renderAccordions(major,'h')||'<div class="no-data" style="padding:16px;font-size:.8rem">該当する重大事故データなし</div>';
   document.getElementById('r_minor').innerHTML=renderAccordions(minor,'l')||'<div class="no-data" style="padding:16px;font-size:.8rem">該当する軽度トラブルデータなし</div>';
