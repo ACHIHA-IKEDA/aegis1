@@ -587,11 +587,11 @@ footer b{color:rgba(107,138,173,.75);}
         </div>
         <div class="ai-links-title" id="lbl_aiopen">外部AIで開く</div>
         <div class="ai-links">
-          <a class="ai-lnk" href="https://chat.openai.com" target="_blank" rel="noopener"><span>🤖</span>ChatGPT</a>
-          <a class="ai-lnk" href="https://claude.ai" target="_blank" rel="noopener"><span>⚡</span>Claude</a>
-          <a class="ai-lnk" href="https://gemini.google.com" target="_blank" rel="noopener"><span>✨</span>Gemini</a>
-          <a class="ai-lnk" href="https://copilot.microsoft.com" target="_blank" rel="noopener"><span>🪟</span>Copilot</a>
-          <a class="ai-lnk" href="https://www.perplexity.ai" target="_blank" rel="noopener"><span>🔍</span>Perplexity</a>
+          <a class="ai-lnk" href="https://chat.openai.com" onclick="window.open(this.href,'_ai_'+Date.now());return false;" rel="noopener"><span>🤖</span>ChatGPT</a>
+          <a class="ai-lnk" href="https://claude.ai" onclick="window.open(this.href,'_ai_'+Date.now());return false;" rel="noopener"><span>⚡</span>Claude</a>
+          <a class="ai-lnk" href="https://gemini.google.com" onclick="window.open(this.href,'_ai_'+Date.now());return false;" rel="noopener"><span>✨</span>Gemini</a>
+          <a class="ai-lnk" href="https://copilot.microsoft.com" onclick="window.open(this.href,'_ai_'+Date.now());return false;" rel="noopener"><span>🪟</span>Copilot</a>
+          <a class="ai-lnk" href="https://www.perplexity.ai" onclick="window.open(this.href,'_ai_'+Date.now());return false;" rel="noopener"><span>🔍</span>Perplexity</a>
         </div>
       </div>
     </div>
@@ -710,32 +710,32 @@ footer b{color:rgba(107,138,173,.75);}
         </div>
         <div id="uploadResult" class="upload-result"></div>
         <div class="fsec">フォーマット例</div>
-        <pre style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;font-size:.75rem;color:var(--gr);overflow-x:auto;line-height:1.7;">タイトル：港湾荷積み中の転倒事故
-危険度：3
-発生日時：2024011514:00
-天候：雨
-作業場所：港
-案件：東伊豆風車
-作業時間帯：昼
-作業時間：4時間
-作業内容：荷積み
-作業員：新人
-発生原因1：雨で濡れた甲板の滑り
-発生原因2：安全靴未着用
-発生原因3：
-再発防止策1：滑り止め処置の徹底
-再発防止策2：保護具着用の義務化
-再発防止策3：
-防止策不履行理由1：急いでいた
-防止策不履行理由2：
-防止策不履行理由3：
-タグ1：転倒
-タグ2：港湾
-タグ3：雨天
+        <pre style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;font-size:.75rem;color:var(--gr);overflow-x:auto;line-height:1.7;">タイトル:港湾荷積み中の転倒事故
+危険度:3
+発生日時:2024011514:00
+天候:雨
+作業場所:港
+案件:東伊豆風車
+作業時間帯:昼
+作業時間:4時間
+作業内容:荷積み
+作業員:新人
+発生原因1:雨で濡れた甲板の滑り
+発生原因2:安全靴未着用
+発生原因3:
+再発防止策1:滑り止め処置の徹底
+再発防止策2:保護具着用の義務化
+再発防止策3:
+防止策不履行理由1:急いでいた
+防止策不履行理由2:
+防止策不履行理由3:
+タグ1:転倒
+タグ2:港湾
+タグ3:雨天
 （タグ4〜20省略可）
-リンク：
-Googleマップリンク：
-備考：</pre>
+リンク:
+Googleマップリンク:
+備考:</pre>
       </div>
     </div>
 
@@ -1088,8 +1088,15 @@ function toggleAcc(id){
 
 function formatDT(s){
   if(!s)return'';
-  const m=s.match(/^(\d{4})(\d{2})(\d{2})(\d{2}:\d{2})?$/);
-  if(m)return`${m[1]}年${m[2]}月${m[3]}日${m[4]?' '+m[4]:''}`;
+  // YYYYMMDDHHММ (12桁・コロンなし): 202309121430 → 2023年9月12日14:30
+  let m=s.match(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})$/);
+  if(m)return`${m[1]}年${parseInt(m[2])}月${parseInt(m[3])}日${m[4]}:${m[5]}`;
+  // YYYYMMDDhh:mm (コロンあり): 2023091214:30 → 2023年9月12日14:30
+  m=s.match(/^(\d{4})(\d{2})(\d{2})(\d{2}):(\d{2})$/);
+  if(m)return`${m[1]}年${parseInt(m[2])}月${parseInt(m[3])}日${m[4]}:${m[5]}`;
+  // YYYYMMDD (8桁・時刻なし): 20230912 → 2023年9月12日
+  m=s.match(/^(\d{4})(\d{2})(\d{2})$/);
+  if(m)return`${m[1]}年${parseInt(m[2])}月${parseInt(m[3])}日`;
   return s;
 }
 
@@ -1141,19 +1148,24 @@ ${rsnTxt}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 [ANALYSIS REQUEST]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️ [IMPORTANT: Response Format]
+Begin your response with a "[OVERALL CONCLUSION & TOP RISKS]" section (max 150 words).
+Summarize the most critical risk, the #1 immediate action required, and the key finding — written for a site manager to read first.
+Then proceed to the detailed sections below.
+
 Based on the above, please provide a detailed safety risk analysis report covering the following:
 
 1. [Domestic (Japan) Accident Cases]
    - Similar serious/fatal accidents in Japan (year, location, summary, casualties, causes)
-   - Official reports/statistics from MHLW, MLIT, Fire Agency etc. (with sources)
-   - News coverage from NHK, Nikkei etc.
-   - YouTube/news video search keywords related to this type of accident
+   - Official reports/statistics from MHLW, MLIT, Fire Agency etc. (must include direct access URLs, e.g. https://www.mhlw.go.jp/...)
+   - News coverage from NHK, Nikkei etc. (must include article URLs; if URL unknown, provide publication name, year, and article title)
+   - YouTube/video links for related accident footage or safety training videos — provide direct URLs (e.g. https://www.youtube.com/watch?v=XXXXX); if URL unknown, provide video title, channel name, and search keywords
 
 2. [International Accident Cases]
    - Similar accidents in the US, Europe, Asia etc. (country, year, summary, casualties, causes)
-   - International agency reports: OSHA, ILO, EU-OSHA etc. (with sources)
-   - International news and accident investigation report references
-   - YouTube/international safety training video search keywords
+   - International agency reports: OSHA, ILO, EU-OSHA etc. (must include direct access URLs, e.g. https://www.osha.gov/...)
+   - International news and accident investigation reports (must include article/report URLs; if URL unknown, provide source name, year, and title)
+   - YouTube/international safety training video links — provide direct URLs (e.g. https://www.youtube.com/watch?v=XXXXX); if URL unknown, provide video title, channel name, and search keywords
 
 3. [Deep Analysis of Non-Compliance with Preventive Measures]
    - Recorded reasons for non-compliance: ${rsnTxt}
@@ -1207,19 +1219,24 @@ ${rsnTxt}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 【解析依頼】
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️ 【重要:回答フォーマット指定】
+回答の冒頭に必ず「【総合結論・最優先リスク】」セクションを200字以内で設けること。
+現場管理者が最初に読むべき結論・最重要リスク・即座に取るべきアクションを端的にまとめる。
+その後に各詳細項目を記述すること。
+
 上記データをふまえ、以下の各項目について詳細な安全リスク分析レポートを作成してください。
 
 1. 【日本国内の同種事故事例】
    ・上記条件に類似した国内の重大事故・死亡事故事例（発生年・場所・概要・死傷者数・原因）
-   ・厚生労働省・国土交通省・消防庁等の公式レポート・統計データ（出典付き）
-   ・NHKニュース・日本経済新聞等の報道事例
-   ・関連するYouTube動画・ニュース映像・事故解説動画のキーワードや検索ワードを提示
+   ・厚生労働省・国土交通省・消防庁等の公式レポート・統計データ（必ず直接アクセスできるURLを記載。例:https://www.mhlw.go.jp/...）
+   ・NHKニュース・日本経済新聞等の報道事例（必ず記事のURLリンクを記載すること。URL不明な場合は掲載年・媒体・記事タイトルを明記）
+   ・関連するYouTube動画・ニュース映像・事故解説動画は直接視聴できるURLリンクを記載すること（例:https://www.youtube.com/watch?v=XXXXX）。URL不明な場合は動画タイトル・チャンネル名・検索キーワードを提示
 
 2. 【海外の同種事故事例】
    ・米国・欧州・アジア等での類似重大事故事例（発生国・年・概要・死傷者数・原因）
-   ・OSHA・ILO・EU-OSHA等の国際機関レポート（出典付き）
-   ・海外ニュース・事故調査報告書の参照元
-   ・関連するYouTube動画・海外事故映像・安全教育動画のキーワードや検索ワードを提示
+   ・OSHA・ILO・EU-OSHA等の国際機関レポート（必ず直接アクセスできるURLを記載。例:https://www.osha.gov/...）
+   ・海外ニュース・事故調査報告書（必ず記事・レポートのURLリンクを記載すること。URL不明な場合は媒体名・掲載年・記事タイトルを明記）
+   ・関連するYouTube動画・海外事故映像・安全教育動画は直接視聴できるURLリンクを記載すること（例:https://www.youtube.com/watch?v=XXXXX）。URL不明な場合は動画タイトル・チャンネル名・検索キーワードを提示
 
 3. 【防止策不履行の深層分析】
    ・社内データに記録された不履行理由: ${rsnTxt}
@@ -1398,7 +1415,7 @@ function parseTxt(text){
     'リンク','Googleマップリンク','備考'];
   const fmap={};fields.forEach(f=>fmap[f]=f);
   text.split('\n').forEach(line=>{
-    const m=line.match(/^(.+?)：(.*)$/);
+    const m=line.match(/^(.+?):(.*)$/);
     if(m){const key=m[1].trim();const val=m[2].trim();if(fmap[key])rec[fmap[key]]=val;}
   });
   if(rec.危険度)rec.危険度=parseInt(rec.危険度)||1;
@@ -1417,7 +1434,7 @@ function exportRec(id){
     '防止策不履行理由1','防止策不履行理由2','防止策不履行理由3',
     ...Array.from({length:20},(_,i)=>'タグ'+(i+1)),
     'リンク','Googleマップリンク','備考'];
-  const txt=fields.map(f=>`${f}：${r[f]!==undefined?r[f]:''}`).join('\n');
+  const txt=fields.map(f=>`${f}:${r[f]!==undefined?r[f]:''}`).join('\n');
   const safe=(r.タイトル||'record').replace(/[\\/:*?"<>|]/g,'_').slice(0,40);
   const blob=new Blob([txt],{type:'text/plain;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
@@ -1435,7 +1452,7 @@ function exportData(){
     '防止策不履行理由1','防止策不履行理由2','防止策不履行理由3',
     ...Array.from({length:20},(_,i)=>'タグ'+(i+1)),
     'リンク','Googleマップリンク','備考'];
-  const txt=data.map(r=>fields.map(f=>`${f}：${r[f]!==undefined?r[f]:''}`).join('\n')).join('\n---\n');
+  const txt=data.map(r=>fields.map(f=>`${f}:${r[f]!==undefined?r[f]:''}`).join('\n')).join('\n---\n');
   const blob=new Blob([txt],{type:'text/plain;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
   a.download='aegis_export_'+new Date().toISOString().slice(0,10)+'.txt';
