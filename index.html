@@ -1,0 +1,1581 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>AEGIS</title>
+<style>
+:root{
+  --bg:#060d1f;--bg2:#080f28;
+  --g1:rgba(255,255,255,0.05);--g2:rgba(255,255,255,0.08);
+  --gb:rgba(255,255,255,0.11);
+  --y:#f5c518;--yd:#c49e0e;--yg:rgba(245,197,24,.28);
+  --c:#00d4ff;--cd:#0099bb;--cg:rgba(0,212,255,.22);
+  --b:#2979ff;--bg3:rgba(41,121,255,.18);
+  --w:#fff;--gr:#6b8aad;--gr2:rgba(107,138,173,.5);
+  --d1:#00e676;--d2:#ffab40;--d3:#ff5252;
+  --r:rgba(255,82,82,.18);
+  --din:'DIN Condensed','D-DIN','Barlow Condensed','Roboto Condensed','Arial Narrow',sans-serif;
+  --jp:'Hiragino Kaku Gothic ProN','メイリオ',Meiryo,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--w);font-family:var(--jp);min-height:100vh;overflow-x:hidden;}
+
+/* ── BG EFFECTS ── */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 15% 15%,rgba(41,121,255,.09) 0%,transparent 55%),
+    radial-gradient(ellipse 60% 70% at 85% 75%,rgba(0,212,255,.07) 0%,transparent 55%),
+    radial-gradient(ellipse 45% 35% at 50% 50%,rgba(245,197,24,.035) 0%,transparent 55%);
+}
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(0,180,255,.025) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(0,180,255,.025) 1px,transparent 1px);
+  background-size:48px 48px;
+}
+.screen{display:none;position:relative;z-index:1;}
+
+/* ── NOTCH SHIELD (always visible behind Dynamic Island) ── */
+#notch-shield{
+  position:fixed;top:0;left:0;right:0;
+  height:env(safe-area-inset-top,0px);
+  background:rgb(5,11,26);
+  z-index:500;pointer-events:none;
+}
+
+/* ── TOPBAR (unified, fixed, auto-hide) ── */
+.topbar{
+  background:rgba(5,11,26,.92);
+  backdrop-filter:blur(32px) saturate(1.8);
+  -webkit-backdrop-filter:blur(32px) saturate(1.8);
+  border-bottom:1px solid rgba(0,212,255,.1);
+  box-shadow:0 1px 24px rgba(0,0,0,.4);
+  /* notch / Dynamic Island safe area */
+  padding-top:env(safe-area-inset-top, 0px);
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+  padding-bottom:0;
+  display:flex;align-items:stretch;justify-content:space-between;
+  position:fixed;top:0;left:0;right:0;z-index:300;
+  transform:translateY(0);
+  transition:transform .32s cubic-bezier(.4,0,.2,1),
+             box-shadow .32s ease;
+  will-change:transform;
+}
+.topbar.bar-hide{
+  transform:translateY(-110%);
+  box-shadow:none;
+}
+.bar-inner{
+  display:flex;align-items:center;justify-content:space-between;
+  width:100%;padding:9px 0;gap:10px;
+}
+.logo-wrap{display:flex;align-items:center;gap:9px;flex-shrink:0;}
+.logo-svg{width:28px;height:32px;flex-shrink:0;}
+.logo-brand{display:flex;flex-direction:column;gap:0;}
+.logo-txt{
+  font-family:var(--din);font-weight:900;font-size:1.28rem;letter-spacing:5px;
+  background:linear-gradient(120deg,#f5c518 0%,#ffe066 45%,#00d4ff 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  filter:drop-shadow(0 0 8px rgba(245,197,24,.2));
+  line-height:1;
+}
+.logo-sub{font-family:var(--din);font-size:.42rem;color:rgba(107,138,173,.55);letter-spacing:.6px;margin-top:1px;white-space:nowrap;}
+/* center meta strip */
+.hdr-meta{
+  display:flex;align-items:center;gap:10px;flex:1;justify-content:center;
+}
+.hdr-meta-seg{
+  display:flex;align-items:center;gap:5px;
+  padding:0 10px;border-right:1px solid rgba(255,255,255,.06);
+}
+.hdr-meta-seg:last-child{border-right:none;}
+.sb-dot{width:4px;height:4px;border-radius:50%;background:var(--c);animation:sbpulse 2.5s infinite;flex-shrink:0;}
+@keyframes sbpulse{0%,100%{opacity:1;box-shadow:0 0 6px var(--c)}50%{opacity:.3;box-shadow:none}}
+.sb-ver{font-family:var(--din);color:var(--c);font-weight:700;font-size:.62rem;letter-spacing:2px;}
+.sb-cnt-num{
+  font-family:var(--din);font-size:.95rem;font-weight:900;letter-spacing:0;
+  background:linear-gradient(120deg,var(--y),var(--c));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  line-height:1;
+}
+.sb-cnt-lbl{font-family:var(--din);font-size:.5rem;color:rgba(107,138,173,.6);letter-spacing:1px;line-height:1;}
+.sb-online{font-family:var(--din);color:rgba(0,230,118,.75);letter-spacing:1px;font-size:.58rem;}
+.topbar-r{display:flex;gap:6px;align-items:center;flex-shrink:0;}
+.lang-btn{
+  padding:4px 8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
+  border-radius:5px;font-family:var(--din);font-size:.62rem;font-weight:700;letter-spacing:1.5px;
+  color:var(--gr);cursor:pointer;transition:all .2s;
+}
+.lang-btn:hover,.lang-btn.on{background:rgba(0,212,255,.1);border-color:rgba(0,212,255,.3);color:var(--c);}
+
+/* ── BTNS ── */
+.btn{
+  font-family:var(--din);font-weight:700;letter-spacing:1px;
+  cursor:pointer;border:none;border-radius:9px;
+  transition:all .2s;display:inline-flex;align-items:center;gap:5px;
+}
+.btn-sm{padding:7px 13px;font-size:.73rem;}
+.btn-md{padding:11px 20px;font-size:.88rem;}
+.btn-lg{padding:16px 28px;font-size:1rem;}
+.btn-glass{background:var(--g1);border:1px solid var(--gb);color:var(--gr);backdrop-filter:blur(10px);}
+.btn-glass:hover{background:var(--g2);color:var(--w);border-color:rgba(255,255,255,.2);}
+.btn-c{background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.35);color:var(--c);}
+.btn-c:hover{background:rgba(0,212,255,.22);box-shadow:0 0 18px var(--cg);}
+.btn-y{background:linear-gradient(135deg,var(--y),var(--yd));border:none;color:#050d1f;box-shadow:0 4px 20px var(--yg);}
+.btn-y:hover{transform:translateY(-2px);box-shadow:0 7px 28px rgba(245,197,24,.5);}
+.btn-y:active{transform:translateY(0);}
+.btn-gr{background:linear-gradient(135deg,#2979ff,#00d4ff);border:none;color:#fff;box-shadow:0 4px 18px rgba(41,121,255,.4);}
+.btn-gr:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(41,121,255,.55);}
+.btn-del{background:rgba(255,82,82,.1);border:1px solid rgba(255,82,82,.3);color:var(--d3);}
+.btn-del:hover{background:rgba(255,82,82,.22);}
+
+/* ── GLASS CARD ── */
+.card{
+  background:var(--g1);backdrop-filter:blur(24px) saturate(1.6);
+  -webkit-backdrop-filter:blur(24px) saturate(1.6);
+  border:1px solid var(--gb);border-radius:14px;
+  box-shadow:0 2px 24px rgba(0,0,0,.3),0 1px 0 rgba(255,255,255,.08) inset;
+}
+
+/* ── LOGIN ── */
+#loginScreen{
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  min-height:100vh;padding:28px 20px 40px;padding-top:max(28px, 8vh);
+}
+.login-card{
+  background:rgba(255,255,255,.045);backdrop-filter:blur(40px) saturate(1.8);
+  -webkit-backdrop-filter:blur(40px) saturate(1.8);
+  border:1px solid rgba(255,255,255,.1);border-radius:22px;
+  padding:36px 32px 30px;width:100%;max-width:420px;
+  box-shadow:0 8px 60px rgba(0,0,0,.5),0 1px 0 rgba(255,255,255,.12) inset;
+  position:relative;overflow:hidden;
+}
+.login-card::before{
+  content:'';position:absolute;top:-1px;left:-1px;right:-1px;bottom:-1px;
+  border-radius:22px;pointer-events:none;
+  background:linear-gradient(145deg,rgba(0,212,255,.12) 0%,transparent 40%,rgba(245,197,24,.06) 100%);
+}
+.login-logo{text-align:center;margin-bottom:24px;}
+.login-logo-svg{width:220px;height:auto;max-width:90%;margin:0 auto 14px;display:block;}
+.login-title{
+  font-family:var(--din);font-weight:900;font-size:2.8rem;letter-spacing:9px;
+  background:linear-gradient(120deg,#f5c518 0%,#ffe066 45%,#00d4ff 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  filter:drop-shadow(0 0 18px rgba(245,197,24,.3));
+}
+.login-sub{font-family:var(--din);font-size:.58rem;color:var(--gr);letter-spacing:1.2px;margin-top:5px;line-height:1.5;}
+.login-tag{font-size:.7rem;color:var(--gr2);margin-top:6px;}
+.form-g{margin-bottom:13px;}
+.form-g label{display:block;font-family:var(--din);font-size:.7rem;color:var(--c);letter-spacing:2px;margin-bottom:5px;}
+.form-g input,.form-g select,.form-g textarea{
+  width:100%;padding:11px 15px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
+  border-radius:9px;color:var(--w);font-size:.92rem;font-family:var(--jp);
+  outline:none;transition:all .2s;
+}
+.form-g input:focus,.form-g select:focus,.form-g textarea:focus{
+  border-color:rgba(0,212,255,.5);background:rgba(0,212,255,.04);
+  box-shadow:0 0 0 3px rgba(0,212,255,.08);
+}
+.form-g select option{background:#0d1a2d;color:#fff;}
+.form-g select.sel-empty{color:rgba(107,138,173,.6);}
+.form-g select.sel-empty option:not([disabled]){color:#fff;}
+.form-g textarea{resize:vertical;min-height:58px;}
+.err-msg{color:var(--d3);font-size:.77rem;text-align:center;margin-top:10px;min-height:18px;}
+
+/* ── CONTENT ── */
+.content{padding:20px;padding-top:16px;max-width:680px;margin:0 auto;}
+/* fixed header offset — updated by JS */
+.screen{padding-top:var(--hdr-h, 60px);}
+.sec-lbl{
+  font-family:var(--din);font-size:.63rem;color:var(--c);
+  letter-spacing:3px;text-transform:uppercase;
+  margin-bottom:13px;padding-bottom:8px;
+  border-bottom:1px solid rgba(0,212,255,.1);
+  display:flex;align-items:center;gap:7px;
+}
+.sec-lbl::before{content:'';display:block;width:2px;height:12px;background:linear-gradient(180deg,var(--c),transparent);border-radius:2px;}
+.inp-grid{display:grid;gap:9px;}
+@media(min-width:521px){.inp-grid{grid-template-columns:1fr 1fr;}}
+.diagnose-btn{
+  width:100%;padding:17px;
+  background:linear-gradient(135deg,var(--y) 0%,var(--yd) 100%);
+  border:none;border-radius:13px;font-family:var(--din);font-weight:900;
+  font-size:1.12rem;letter-spacing:4px;color:#050d1f;cursor:pointer;
+  transition:all .2s;box-shadow:0 4px 24px var(--yg),0 1px 0 rgba(255,255,255,.2) inset;
+  position:relative;overflow:hidden;margin-top:20px;
+}
+.diagnose-btn::after{
+  content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);
+  transition:left .45s;
+}
+.diagnose-btn:hover::after{left:100%;}
+.diagnose-btn:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(245,197,24,.5);}
+.diagnose-btn:active{transform:translateY(0);}
+
+/* ── RESULTS ── */
+.result-wrap{margin-top:26px;display:none;scroll-margin-top:100px;}
+.result-wrap.show{display:block;animation:fadeUp .5s cubic-bezier(.25,.46,.45,.94);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+.stage-hdr{
+  display:flex;align-items:center;gap:9px;margin:18px 0 10px;
+}
+.stage-num{
+  width:22px;height:22px;border-radius:50%;
+  background:linear-gradient(135deg,var(--c),var(--b));
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--din);font-size:.67rem;font-weight:700;color:#fff;flex-shrink:0;
+}
+.stage-title{font-family:var(--din);font-size:.68rem;color:var(--gr);letter-spacing:2.5px;text-transform:uppercase;}
+.stage-divider{flex:1;height:1px;background:linear-gradient(90deg,rgba(0,212,255,.15),transparent);}
+
+/* Danger overview */
+.danger-row{
+  display:flex;align-items:center;gap:16px;
+  padding:14px 18px;border-radius:13px;margin-bottom:10px;
+}
+.danger-row.lv1{background:rgba(0,230,118,.06);border:1px solid rgba(0,230,118,.2);}
+.danger-row.lv2{background:rgba(255,171,64,.06);border:1px solid rgba(255,171,64,.2);}
+.danger-row.lv3{background:rgba(255,82,82,.07);border:1px solid rgba(255,82,82,.22);}
+.danger-stars{font-size:1.55rem;letter-spacing:3px;}
+.lv1 .danger-stars{color:var(--d1);}
+.lv2 .danger-stars{color:var(--d2);}
+.lv3 .danger-stars{color:var(--d3);text-shadow:0 0 12px rgba(255,82,82,.5);}
+.danger-info .dlbl{font-family:var(--din);font-size:.62rem;color:var(--gr);letter-spacing:2px;}
+.danger-info .dname{font-family:var(--din);font-size:.95rem;font-weight:700;margin-top:2px;}
+.lv1 .dname{color:var(--d1);}
+.lv2 .dname{color:var(--d2);}
+.lv3 .dname{color:var(--d3);}
+
+/* ACCORDION */
+.acc{margin-bottom:8px;border-radius:13px;overflow:hidden;}
+.acc-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:13px 16px;cursor:pointer;gap:10px;transition:background .2s,border-color .2s;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  border-radius:13px;position:relative;
+}
+.acc-hdr.open{border-radius:13px 13px 0 0;border-bottom-color:transparent;}
+.acc-bar{position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px;}
+.acc-bar-hi{background:linear-gradient(180deg,#ff5252,#c62828);}
+.acc-bar-md{background:linear-gradient(180deg,#ffab40,#e65100);}
+.acc-bar-lo{background:linear-gradient(180deg,#00e676,#00796b);}
+.acc-hdr:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.14);}
+.acc-hdr.open{background:rgba(255,255,255,.06);}
+.acc-left{display:flex;align-items:flex-start;gap:9px;flex:1;padding-left:8px;}
+.acc-badge{padding:2px 9px;border-radius:16px;font-family:var(--din);font-size:.65rem;font-weight:700;letter-spacing:.5px;flex-shrink:0;margin-top:2px;}
+.badge-hi{background:rgba(255,82,82,.15);color:var(--d3);border:1px solid rgba(255,82,82,.35);}
+.badge-md{background:rgba(255,171,64,.15);color:var(--d2);border:1px solid rgba(255,171,64,.35);}
+.badge-lo{background:rgba(0,230,118,.15);color:var(--d1);border:1px solid rgba(0,230,118,.35);}
+.acc-ttl{font-size:.87rem;font-weight:600;line-height:1.45;flex:1;}
+.acc-arr{width:18px;height:18px;flex-shrink:0;color:var(--gr);transition:transform .28s cubic-bezier(.4,0,.2,1);}
+.acc-hdr.open .acc-arr{transform:rotate(180deg);}
+.acc-body{
+  max-height:0;overflow:hidden;
+  transition:max-height .35s cubic-bezier(.4,0,.2,1);
+  background:rgba(255,255,255,.025);
+  border:1px solid rgba(255,255,255,.08);border-top:none;border-radius:0 0 13px 13px;
+}
+.acc-body.open{max-height:600px;}
+.acc-body:not(.open){border-color:transparent;}
+.acc-body-inner{padding:14px 16px;}
+.acc-sec{font-family:var(--din);font-size:.6rem;letter-spacing:2px;margin:10px 0 5px;display:flex;align-items:center;gap:6px;}
+.acc-sec::before{content:'';display:block;width:8px;height:1px;}
+.acc-sec:first-child{margin-top:0;}
+.acc-sec-cause{color:var(--d3);}.acc-sec-cause::before{background:var(--d3);}
+.acc-sec-msr{color:var(--d1);}.acc-sec-msr::before{background:var(--d1);}
+.acc-sec-ref{color:var(--gr);}.acc-sec-ref::before{background:var(--gr);}
+.acc-li{font-size:.82rem;color:rgba(255,255,255,.8);line-height:1.55;padding:3px 0;display:flex;gap:7px;}
+.acc-li::before{content:'▸';color:var(--y);flex-shrink:0;font-size:.72rem;margin-top:2px;}
+.acc-link{color:var(--c);text-decoration:underline;word-break:break-all;font-size:.77rem;}
+.map-btn{
+  display:inline-flex;align-items:center;gap:6px;margin-top:8px;
+  padding:7px 13px;background:rgba(41,121,255,.12);border:1px solid rgba(41,121,255,.3);
+  border-radius:8px;color:var(--c);font-family:var(--din);font-size:.75rem;font-weight:700;
+  text-decoration:none;transition:all .2s;
+}
+.map-btn:hover{background:rgba(41,121,255,.24);}
+
+/* Measures card */
+.measures-card{
+  padding:15px 16px;margin-bottom:10px;
+  background:rgba(0,212,255,.04);border:1px solid rgba(0,212,255,.13);border-radius:12px;
+}
+.m-row{font-size:.84rem;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);display:flex;gap:8px;align-items:flex-start;}
+.m-row:last-child{border-bottom:none;}
+.m-row::before{content:'◆';color:var(--c);font-size:.6rem;margin-top:4px;flex-shrink:0;}
+
+/* ── STAGE 2 ── */
+.stage2-card{
+  padding:18px;margin-bottom:10px;
+  background:linear-gradient(135deg,rgba(41,121,255,.07),rgba(0,212,255,.04));
+  border:1px solid rgba(41,121,255,.2);border-radius:14px;
+}
+.s2-desc{font-size:.8rem;color:var(--gr);line-height:1.6;margin-bottom:14px;}
+.s2-btns{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.copy-ok{
+  font-family:var(--din);font-size:.7rem;color:var(--d1);letter-spacing:1px;
+  opacity:0;transition:opacity .3s;display:flex;align-items:center;gap:4px;
+}
+.copy-ok.show{opacity:1;}
+.ai-links-title{font-family:var(--din);font-size:.6rem;color:var(--gr);letter-spacing:2px;margin:14px 0 9px;}
+.ai-links{display:flex;flex-wrap:wrap;gap:9px;}
+.ai-lnk{
+  padding:12px 20px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);
+  border-radius:12px;font-family:var(--din);font-size:.88rem;font-weight:700;color:var(--w);
+  text-decoration:none;transition:all .2s;display:flex;align-items:center;gap:7px;
+  letter-spacing:.5px;
+}
+.ai-lnk span{font-size:1.1rem;}
+.ai-lnk:hover{background:rgba(255,255,255,.1);transform:translateY(-2px);box-shadow:0 5px 18px rgba(0,0,0,.35);}
+/* measures split */
+.msplit-wrap{display:grid;gap:8px;}
+@media(min-width:521px){.msplit-wrap{grid-template-columns:1fr 1fr;}}
+.msplit-card{padding:13px 15px;border-radius:11px;}
+.msplit-hi{background:rgba(255,82,82,.04);border:1px solid rgba(255,82,82,.14);}
+.msplit-lo{background:rgba(0,230,118,.04);border:1px solid rgba(0,230,118,.12);}
+.msplit-lbl{font-family:var(--din);font-size:.58rem;letter-spacing:2px;margin-bottom:7px;display:flex;align-items:center;gap:5px;}
+.msplit-lbl-hi{color:var(--d3);}
+.msplit-lbl-lo{color:var(--d1);}
+
+/* ── ADMIN ── */
+.admin-content{padding:20px;max-width:960px;margin:0 auto;}
+.tabs{display:flex;gap:4px;margin-bottom:18px;padding:4px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;flex-wrap:wrap;}
+.tab-btn{flex:1;min-width:80px;padding:9px 6px;border:none;border-radius:8px;font-family:var(--din);font-size:.75rem;font-weight:700;letter-spacing:.8px;cursor:pointer;background:transparent;color:var(--gr);transition:all .2s;}
+.tab-btn.on{background:linear-gradient(135deg,rgba(0,212,255,.14),rgba(41,121,255,.1));color:var(--c);border:1px solid rgba(0,212,255,.22);}
+.tab-pane{display:none;}
+.tab-pane.on{display:block;}
+.badge{display:inline-block;background:linear-gradient(135deg,rgba(0,212,255,.2),rgba(41,121,255,.2));color:var(--c);border:1px solid rgba(0,212,255,.3);border-radius:10px;padding:1px 7px;font-family:var(--din);font-size:.68rem;font-weight:700;margin-left:5px;}
+.dc{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:13px 15px;margin-bottom:8px;transition:all .2s;}
+.dc:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12);}
+.dc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.dc-ttl{font-size:.88rem;font-weight:600;color:var(--y);flex:1;line-height:1.4;}
+.dc-acts{display:flex;gap:5px;flex-shrink:0;}
+.dc-meta{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;}
+.tag{padding:2px 8px;border-radius:12px;font-family:var(--din);font-size:.65rem;font-weight:600;letter-spacing:.5px;}
+.tp{background:rgba(0,212,255,.1);color:var(--c);border:1px solid rgba(0,212,255,.2);}
+.tw{background:rgba(245,197,24,.1);color:var(--y);border:1px solid rgba(245,197,24,.2);}
+.tt{background:rgba(255,255,255,.06);color:var(--gr);border:1px solid rgba(255,255,255,.1);}
+.tk{background:rgba(0,230,118,.1);color:var(--d1);border:1px solid rgba(0,230,118,.2);}
+.td1{background:rgba(0,230,118,.1);color:var(--d1);border:1px solid rgba(0,230,118,.2);}
+.td2{background:rgba(255,171,64,.1);color:var(--d2);border:1px solid rgba(255,171,64,.2);}
+.td3{background:rgba(255,82,82,.1);color:var(--d3);border:1px solid rgba(255,82,82,.2);}
+.dc-cause{font-size:.74rem;color:var(--gr);margin-top:5px;}
+.no-data{text-align:center;color:var(--gr);padding:44px;font-family:var(--din);letter-spacing:1px;}
+.aform{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:20px;}
+.fsec{font-family:var(--din);font-size:.65rem;color:var(--c);letter-spacing:2px;margin:15px 0 9px;padding-top:13px;border-top:1px solid rgba(255,255,255,.06);}
+.fsec:first-child{margin-top:0;padding-top:0;border-top:none;}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+
+/* Upload */
+.upload-zone{
+  border:2px dashed rgba(0,212,255,.25);border-radius:13px;padding:28px 20px;
+  text-align:center;cursor:pointer;transition:all .2s;background:rgba(0,212,255,.025);
+  position:relative;
+}
+.upload-zone:hover{border-color:rgba(0,212,255,.5);background:rgba(0,212,255,.05);}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.upload-ico{font-size:1.8rem;margin-bottom:7px;}
+.upload-txt{font-family:var(--din);font-size:.78rem;color:var(--gr);letter-spacing:1px;line-height:1.6;}
+.upload-result{margin-top:12px;font-size:.8rem;color:var(--d1);font-family:var(--din);}
+
+/* Master */
+.msec{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:15px;margin-bottom:10px;}
+.msec h3{font-family:var(--din);font-size:.73rem;color:var(--c);letter-spacing:2px;margin-bottom:11px;}
+.mitems{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:11px;}
+.mitem{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:3px 11px;font-size:.77rem;display:flex;align-items:center;gap:5px;}
+.mdel{background:none;border:none;color:var(--d3);cursor:pointer;font-size:.8rem;padding:0 2px;line-height:1;}
+.mord{background:none;border:none;color:var(--gr);cursor:pointer;font-size:.72rem;padding:0 2px;line-height:1;transition:color .15s;}
+.mord:hover{color:var(--c);}
+.madd{display:flex;gap:7px;}
+.madd input{flex:1;padding:7px 11px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:7px;color:var(--w);font-size:.82rem;outline:none;}
+.madd input:focus{border-color:rgba(0,212,255,.4);}
+.btn-madd{padding:7px 13px;background:linear-gradient(135deg,rgba(0,212,255,.18),rgba(41,121,255,.14));border:1px solid rgba(0,212,255,.3);color:var(--c);border-radius:7px;font-family:var(--din);font-size:.76rem;font-weight:700;cursor:pointer;}
+.hint-grid{display:grid;gap:6px;margin-top:8px;}
+.hint-row{display:flex;gap:7px;align-items:center;}
+.hint-row label{font-family:var(--din);font-size:.65rem;color:var(--gr);width:80px;flex-shrink:0;letter-spacing:1px;}
+.hint-row input{flex:1;padding:5px 9px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:6px;color:var(--w);font-size:.8rem;outline:none;}
+.hint-row input:focus{border-color:rgba(0,212,255,.35);}
+
+/* Footer */
+footer{
+  text-align:center;padding:14px 20px;
+  font-family:var(--din);font-size:.62rem;letter-spacing:3px;
+  color:var(--gr2);border-top:1px solid rgba(255,255,255,.04);margin-top:48px;
+}
+footer b{color:rgba(107,138,173,.75);}
+
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px;}
+
+@media(max-width:520px){
+  .fgrid{grid-template-columns:1fr;}
+  .tabs{gap:3px;}
+  .tab-btn{font-size:.68rem;padding:8px 4px;}
+  .hdr-meta{display:none;}
+  .logo-sub{display:none;}
+}
+@media(max-width:380px){
+  .logo-txt{font-size:1.05rem;letter-spacing:3px;}
+  .btn-sm{padding:6px 9px;font-size:.68rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- NOTCH SHIELD: always visible, covers Dynamic Island / notch area -->
+<div id="notch-shield"></div>
+
+<!-- LOGO SVG (shared via defs) -->
+<svg width="0" height="0" style="position:absolute;overflow:hidden">
+  <defs>
+    <!-- Gold-cyan gradient for AEGIS text -->
+    <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f5c518"/>
+      <stop offset="60%" stop-color="#ffe066"/>
+      <stop offset="100%" stop-color="#00d4ff"/>
+    </linearGradient>
+    <!-- ACHIHA truck royal blue gradient -->
+    <linearGradient id="tb" x1="0" y1="0" x2="0.25" y2="1">
+      <stop offset="0%" stop-color="#1d72d8"/>
+      <stop offset="100%" stop-color="#0b3a8c"/>
+    </linearGradient>
+    <!-- Shield clip path for logo stripe -->
+    <clipPath id="sc_logo">
+      <path d="M40 2 L76 14 L76 54 Q76 82 40 91 Q4 82 4 54 L4 14 Z"/>
+    </clipPath>
+  </defs>
+</svg>
+
+<!-- ══════════════════════════════════════════════
+     LOGIN SCREEN
+══════════════════════════════════════════════ -->
+<div id="loginScreen" class="screen" style="display:flex">
+  <div class="login-card">
+    <div class="login-logo">
+      <!-- Combined emblem + wordmark lockup -->
+      <svg class="login-logo-svg" viewBox="0 0 248 92" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- ── SHIELD ── -->
+        <!-- Shield body: flat ACHIHA royal blue -->
+        <path d="M40 2 L76 14 L76 54 Q76 82 40 91 Q4 82 4 54 L4 14 Z" fill="#1557B0"/>
+        <!-- White V-stripe (truck livery motif), clipped to shield -->
+        <g clip-path="url(#sc_logo)">
+          <polygon points="62,2 76,14 76,48 34,91 14,91 50,2" fill="rgba(255,255,255,0.30)"/>
+          <polygon points="52,2 64,2 28,91 16,91" fill="rgba(255,255,255,0.13)"/>
+        </g>
+        <!-- Yellow crown band -->
+        <path d="M40 2 L76 14 L71 17.5 L40 8 L9 17.5 L4 14 Z" fill="#FFD600"/>
+        <!-- Yellow outer border -->
+        <path d="M40 2 L76 14 L76 54 Q76 82 40 91 Q4 82 4 54 L4 14 Z" fill="none" stroke="#FFD600" stroke-width="1.5" opacity="0.65"/>
+        <!-- Inner glass rim -->
+        <path d="M40 10 L68 21 L68 54 Q68 75 40 83 Q12 75 12 54 L12 21 Z" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="0.9"/>
+        <!-- White upward chevron (early-warning symbol) -->
+        <polyline points="20,58 40,36 60,58" fill="none" stroke="white" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- Yellow secondary chevron (alert accent) -->
+        <polyline points="27,71 40,56 53,71" fill="none" stroke="#FFD600" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- Yellow bottom foot-line -->
+        <path d="M4 72 Q4 82 40 91 Q76 82 76 72 L76 76 Q76 85 40 91 Q4 85 4 76 Z" fill="#FFD600" opacity="0.50"/>
+        <!-- ── WORDMARK ── -->
+        <!-- AEGIS text with gold-cyan gradient -->
+        <text x="90" y="63" font-family="'DIN Condensed','D-DIN','Barlow Condensed','Arial Narrow',sans-serif" font-weight="900" font-size="54" letter-spacing="5" fill="url(#lg)">AEGIS</text>
+        <!-- Tagline -->
+        <text x="91" y="78" font-family="'DIN Condensed','Arial Narrow',sans-serif" font-weight="400" font-size="8.5" letter-spacing="2.2" fill="rgba(107,138,173,0.65)">EARLY-WARNING SYSTEM</text>
+      </svg>
+      <div class="login-sub">Achiha Early-warning &amp; Guidance Intelligence System</div>
+      <div class="login-tag">安全管理・事故予測システム</div>
+    </div>
+    <div class="form-g"><label>USER ID</label><input type="text" id="li_id" placeholder="ユーザーIDを入力" autocomplete="username"></div>
+    <div class="form-g"><label>PASSWORD</label><input type="password" id="li_pw" placeholder="パスワードを入力" autocomplete="current-password"></div>
+    <button class="btn btn-y btn-lg" style="width:100%;letter-spacing:3px;" onclick="doLogin()">LOGIN</button>
+    <div class="err-msg" id="li_err"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     MAIN SCREEN
+══════════════════════════════════════════════ -->
+<div id="mainScreen" class="screen">
+  <div class="topbar" id="mainTopbar">
+    <div class="bar-inner">
+      <div class="logo-wrap">
+        <svg class="logo-svg" viewBox="0 0 80 92" fill="none">
+          <path d="M40 2 L76 14 L76 54 Q76 82 40 91 Q4 82 4 54 L4 14 Z" fill="#1557B0"/>
+          <g clip-path="url(#sc_logo)">
+            <polygon points="62,2 76,14 76,48 34,91 14,91 50,2" fill="rgba(255,255,255,0.30)"/>
+            <polygon points="52,2 64,2 28,91 16,91" fill="rgba(255,255,255,0.13)"/>
+          </g>
+          <path d="M40 2 L76 14 L71 17.5 L40 8 L9 17.5 L4 14 Z" fill="#FFD600"/>
+          <path d="M40 2 L76 14 L76 54 Q76 82 40 91 Q4 82 4 54 L4 14 Z" fill="none" stroke="#FFD600" stroke-width="1.5" opacity="0.65"/>
+          <path d="M40 10 L68 21 L68 54 Q68 75 40 83 Q12 75 12 54 L12 21 Z" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="0.9"/>
+          <polyline points="20,58 40,36 60,58" fill="none" stroke="white" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="27,71 40,56 53,71" fill="none" stroke="#FFD600" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M4 72 Q4 82 40 91 Q76 82 76 72 L76 76 Q76 85 40 91 Q4 85 4 76 Z" fill="#FFD600" opacity="0.50"/>
+        </svg>
+        <div class="logo-brand">
+          <div class="logo-txt">AEGIS</div>
+          <div class="logo-sub">Achiha Early-warning &amp; Guidance Intelligence System</div>
+        </div>
+      </div>
+      <div class="hdr-meta">
+        <div class="hdr-meta-seg">
+          <div class="sb-dot"></div>
+          <span class="sb-ver" id="sbVer">v1.0</span>
+        </div>
+        <div class="hdr-meta-seg">
+          <span class="sb-cnt-num" id="sbCount">0</span>
+          <span class="sb-cnt-lbl">CASES</span>
+        </div>
+        <div class="hdr-meta-seg">
+          <span class="sb-online">● ONLINE</span>
+        </div>
+      </div>
+      <div class="topbar-r">
+        <button class="lang-btn" id="langBtn" onclick="toggleLang()">EN</button>
+        <span id="adminNavBtn" style="display:none"><button class="btn btn-c btn-sm" onclick="showAdmin()" id="adminNavTxt">管理者</button></span>
+        <button class="btn btn-glass btn-sm" onclick="doLogout()" id="logoutTxt">ログアウト</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="content" style="padding-top:14px;">
+    <p class="sec-lbl" id="lbl_conditions">作業条件を選択</p>
+    <div class="inp-grid">
+      <div class="form-g"><label id="lbl_place">📍 作業場所</label><select id="i_place"></select></div>
+      <div class="form-g"><label id="lbl_weather">🌤 天候</label><select id="i_weather"></select></div>
+      <div class="form-g"><label id="lbl_project">📋 案件</label><select id="i_project"></select></div>
+      <div class="form-g"><label id="lbl_time">🕐 作業時間帯</label><select id="i_time"></select></div>
+      <div class="form-g"><label id="lbl_work">🔧 作業内容</label><select id="i_work"></select></div>
+      <div class="form-g"><label id="lbl_worker">👷 作業員</label><select id="i_worker"></select></div>
+    </div>
+    <button class="diagnose-btn" onclick="diagnose()" id="diagnoseBtn">⚡ 診断する</button>
+
+    <!-- RESULTS -->
+    <div id="resultWrap" class="result-wrap">
+
+      <div id="r_dangerRow"></div>
+
+      <p class="sec-lbl" style="margin-top:14px" id="lbl_major">想定重大事故</p>
+      <div id="r_major"></div>
+
+      <p class="sec-lbl" style="margin-top:14px" id="lbl_minor">想定軽度トラブル</p>
+      <div id="r_minor"></div>
+
+      <p class="sec-lbl" style="margin-top:14px" id="lbl_measures">推奨対策</p>
+      <div id="r_measures"></div>
+
+      <!-- STAGE 2 -->
+      <div class="stage-hdr" style="margin-top:20px">
+        <div class="stage-num">2</div>
+        <div class="stage-title" id="lbl_stage2">詳細解析プロンプト生成</div>
+        <div class="stage-divider"></div>
+      </div>
+
+      <div class="stage2-card">
+        <div class="s2-desc" id="lbl_s2desc">
+          選択条件と社内事故データを組み込んだ高精度プロンプトを生成します。<br>
+          外部AIに貼り付けることで、世界規模のデータに基づく詳細分析が得られます。
+        </div>
+        <div class="s2-btns">
+          <button class="btn btn-gr btn-md" onclick="genPrompt()" id="genPromptBtn">📋 プロンプトを生成・コピー</button>
+          <span class="copy-ok" id="copyOk">✓ クリップボードにコピーしました</span>
+        </div>
+        <div class="ai-links-title" id="lbl_aiopen">外部AIで開く</div>
+        <div class="ai-links">
+          <a class="ai-lnk" href="https://chat.openai.com" target="_blank" rel="noopener"><span>🤖</span>ChatGPT</a>
+          <a class="ai-lnk" href="https://claude.ai" target="_blank" rel="noopener"><span>⚡</span>Claude</a>
+          <a class="ai-lnk" href="https://gemini.google.com" target="_blank" rel="noopener"><span>✨</span>Gemini</a>
+          <a class="ai-lnk" href="https://copilot.microsoft.com" target="_blank" rel="noopener"><span>🪟</span>Copilot</a>
+          <a class="ai-lnk" href="https://www.perplexity.ai" target="_blank" rel="noopener"><span>🔍</span>Perplexity</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer><b>Produced by IKEDA | S3SSD | ACHIHA</b></footer>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     ADMIN SCREEN
+══════════════════════════════════════════════ -->
+<div id="adminScreen" class="screen">
+  <div class="topbar" id="adminTopbar">
+    <div class="bar-inner">
+      <div class="logo-wrap">
+        <svg class="logo-svg" viewBox="0 0 80 92" fill="none">
+          <path d="M40 2 L76 14 L76 54 Q76 82 40 91 Q4 82 4 54 L4 14 Z" fill="#1557B0"/>
+          <g clip-path="url(#sc_logo)">
+            <polygon points="62,2 76,14 76,48 34,91 14,91 50,2" fill="rgba(255,255,255,0.30)"/>
+            <polygon points="52,2 64,2 28,91 16,91" fill="rgba(255,255,255,0.13)"/>
+          </g>
+          <path d="M40 2 L76 14 L71 17.5 L40 8 L9 17.5 L4 14 Z" fill="#FFD600"/>
+          <path d="M40 2 L76 14 L76 54 Q76 82 40 91 Q4 82 4 54 L4 14 Z" fill="none" stroke="#FFD600" stroke-width="1.5" opacity="0.65"/>
+          <path d="M40 10 L68 21 L68 54 Q68 75 40 83 Q12 75 12 54 L12 21 Z" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="0.9"/>
+          <polyline points="20,58 40,36 60,58" fill="none" stroke="white" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="27,71 40,56 53,71" fill="none" stroke="#FFD600" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M4 72 Q4 82 40 91 Q76 82 76 72 L76 76 Q76 85 40 91 Q4 85 4 76 Z" fill="#FFD600" opacity="0.50"/>
+        </svg>
+        <div class="logo-brand">
+          <div class="logo-txt" style="font-size:1.1rem;letter-spacing:4px;">AEGIS <span style="color:var(--gr);font-size:.65rem;letter-spacing:2px;">ADMIN</span></div>
+        </div>
+      </div>
+      <div class="hdr-meta">
+        <div class="hdr-meta-seg"><div class="sb-dot"></div><span class="sb-ver" id="sbVerAdmin">v1.0</span></div>
+        <div class="hdr-meta-seg"><span class="sb-cnt-num" id="sbCountAdmin">0</span><span class="sb-cnt-lbl">CASES</span></div>
+      </div>
+      <div class="topbar-r">
+        <button class="btn btn-c btn-sm" onclick="showMain()">診断画面</button>
+        <button class="btn btn-glass btn-sm" onclick="doLogout()">ログアウト</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="admin-content">
+    <div class="tabs">
+      <button class="tab-btn on" id="tb_list" onclick="switchTab('list')">事故データ</button>
+      <button class="tab-btn" id="tb_form" onclick="switchTab('form')">追加 / 編集</button>
+      <button class="tab-btn" id="tb_file" onclick="switchTab('file')">テキスト取込</button>
+      <button class="tab-btn" id="tb_mst"  onclick="switchTab('mst')">選択肢管理</button>
+      <button class="tab-btn" id="tb_cfg"  onclick="switchTab('cfg')">設定</button>
+    </div>
+
+    <!-- DATA LIST -->
+    <div id="tp_list" class="tab-pane on"><div id="dataList"></div></div>
+
+    <!-- ADD / EDIT FORM -->
+    <div id="tp_form" class="tab-pane">
+      <div class="aform">
+        <input type="hidden" id="f_id">
+        <div class="fsec">基本情報</div>
+        <div class="form-g"><label>タイトル *</label><input type="text" id="f_title" placeholder="事故タイトル"></div>
+        <div class="fgrid">
+          <div class="form-g"><label>危険度</label><select id="f_danger"><option value="1">1 ─ 低</option><option value="2">2 ─ 中</option><option value="3">3 ─ 高</option></select></div>
+          <div class="form-g"><label>発生日時</label><input type="text" id="f_dt" placeholder="例: 2026112315:00 または 20261123"></div>
+          <div class="form-g"><label>作業場所</label><select id="f_place"></select></div>
+          <div class="form-g"><label>天候</label><select id="f_weather"></select></div>
+          <div class="form-g"><label>案件</label><select id="f_project"></select></div>
+          <div class="form-g"><label>作業時間帯</label><select id="f_time"></select></div>
+          <div class="form-g"><label>作業時間</label><input type="text" id="f_wtime" placeholder="例: 8時間"></div>
+          <div class="form-g"><label>作業内容</label><select id="f_work"></select></div>
+          <div class="form-g"><label>作業員</label><select id="f_worker"></select></div>
+        </div>
+        <div class="fsec">発生原因</div>
+        <div class="form-g"><label>発生原因1</label><input type="text" id="f_c1"></div>
+        <div class="form-g"><label>発生原因2</label><input type="text" id="f_c2"></div>
+        <div class="form-g"><label>発生原因3</label><input type="text" id="f_c3"></div>
+        <div class="fsec">再発防止策</div>
+        <div class="form-g"><label>再発防止策1</label><input type="text" id="f_m1"></div>
+        <div class="form-g"><label>再発防止策2</label><input type="text" id="f_m2"></div>
+        <div class="form-g"><label>再発防止策3</label><input type="text" id="f_m3"></div>
+        <div class="fsec">防止策不履行理由</div>
+        <div class="form-g"><label>防止策不履行理由1</label><input type="text" id="f_r1"></div>
+        <div class="form-g"><label>防止策不履行理由2</label><input type="text" id="f_r2"></div>
+        <div class="form-g"><label>防止策不履行理由3</label><input type="text" id="f_r3"></div>
+        <div class="fsec">タグ・その他</div>
+        <div class="fgrid">
+          <div class="form-g"><label>タグ1</label><input type="text" id="f_t1"></div>
+          <div class="form-g"><label>タグ2</label><input type="text" id="f_t2"></div>
+          <div class="form-g"><label>タグ3</label><input type="text" id="f_t3"></div>
+          <div class="form-g"><label>タグ4</label><input type="text" id="f_t4"></div>
+          <div class="form-g"><label>タグ5</label><input type="text" id="f_t5"></div>
+          <div class="form-g"><label>タグ6〜20（カンマ区切り）</label><input type="text" id="f_tx" placeholder="例: タグA, タグB, ..."></div>
+        </div>
+        <div class="form-g"><label>リンク</label><input type="text" id="f_link" placeholder="https://..."></div>
+        <div class="form-g"><label>Googleマップリンク</label><input type="text" id="f_gmap" placeholder="https://maps.google.com/..."></div>
+        <div class="form-g"><label>備考</label><textarea id="f_note"></textarea></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-gr btn-md" onclick="saveRec()">💾 保存する</button>
+          <button class="btn btn-glass btn-md" onclick="clearForm()">キャンセル</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FILE UPLOAD -->
+    <div id="tp_file" class="tab-pane">
+      <div class="aform">
+        <div class="fsec">テキストファイルから事故データを取り込む</div>
+        <p style="font-size:.8rem;color:var(--gr);margin-bottom:14px;line-height:1.7;">
+          以下の形式のテキストファイル（.txt）をアップロードしてください。<br>
+          複数件連続して記載する場合は <code style="background:rgba(255,255,255,.07);padding:1px 5px;border-radius:4px;">---</code> で区切ってください。
+        </p>
+        <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+          <input type="file" id="fileInput" accept=".txt" multiple onchange="handleFileUpload(this)">
+          <div class="upload-ico">📂</div>
+          <div class="upload-txt">クリックまたはドラッグ＆ドロップ<br>（.txtファイル対応・複数可）</div>
+        </div>
+        <div id="uploadResult" class="upload-result"></div>
+        <div class="fsec">フォーマット例</div>
+        <pre style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;font-size:.75rem;color:var(--gr);overflow-x:auto;line-height:1.7;">タイトル：港湾荷積み中の転倒事故
+危険度：3
+発生日時：2024011514:00
+天候：雨
+作業場所：港
+案件：東伊豆風車
+作業時間帯：昼
+作業時間：4時間
+作業内容：荷積み
+作業員：新人
+発生原因1：雨で濡れた甲板の滑り
+発生原因2：安全靴未着用
+発生原因3：
+再発防止策1：滑り止め処置の徹底
+再発防止策2：保護具着用の義務化
+再発防止策3：
+防止策不履行理由1：急いでいた
+防止策不履行理由2：
+防止策不履行理由3：
+タグ1：転倒
+タグ2：港湾
+タグ3：雨天
+（タグ4〜20省略可）
+リンク：
+Googleマップリンク：
+備考：</pre>
+      </div>
+    </div>
+
+    <!-- MASTER -->
+    <div id="tp_mst" class="tab-pane"><div id="masterList"></div></div>
+
+    <!-- SETTINGS -->
+    <div id="tp_cfg" class="tab-pane">
+      <div class="aform">
+        <div class="fsec">システムバージョン管理</div>
+        <div class="form-g"><label>バージョン番号</label><input type="text" id="cfg_ver" placeholder="例: v1.2.0"></div>
+        <button class="btn btn-gr btn-md" onclick="saveVersion()">保存する</button>
+        <div class="fsec" style="margin-top:24px;">データエクスポート</div>
+        <p style="font-size:.8rem;color:var(--gr);margin-bottom:12px;">全学習データをテキストファイル（.txt）としてダウンロードします。取込フォーマットと同一形式で出力されます。</p>
+        <button class="btn btn-c btn-md" onclick="exportData()">📤 テキストデータとして出力</button>
+        <div class="fsec" style="margin-top:24px;">データ管理</div>
+        <p style="font-size:.8rem;color:var(--gr);margin-bottom:12px;">学習データをすべて初期サンプルにリセットします（復元不可）</p>
+        <button class="btn btn-del btn-md" onclick="resetData()">⚠️ データを初期化する</button>
+      </div>
+    </div>
+  </div>
+
+  <footer><b>Produced by IKEDA | S3SSD | ACHIHA</b></footer>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   1. INITIAL DATA
+═══════════════════════════════════════════ */
+const _t=()=>({タグ1:"",タグ2:"",タグ3:"",タグ4:"",タグ5:"",タグ6:"",タグ7:"",タグ8:"",タグ9:"",タグ10:"",タグ11:"",タグ12:"",タグ13:"",タグ14:"",タグ15:"",タグ16:"",タグ17:"",タグ18:"",タグ19:"",タグ20:""});
+const INIT_DATA=[
+  {id:1,タイトル:"電車輸送中のトレーラー横転による作業員挟まれ事故",危険度:3,発生日時:"202309121430",天候:"雨",作業場所:"道路",案件:"",作業時間帯:"昼",作業時間:"6時間",作業内容:"電車輸送",作業員:"ベテラン",発生原因1:"雨天・カーブでのスピード超過によるトレーラー横転",発生原因2:"輸送経路の事前リスク調査不足（急カーブ見落とし）",発生原因3:"誘導車との連絡途絶による単独判断",再発防止策1:"輸送前の経路危険箇所チェックリスト作成と全員共有",再発防止策2:"雨天時の速度制限（通常の70%以下）の厳格化",再発防止策3:"誘導車・本車間の常時無線連絡の義務化",防止策不履行理由1:"スケジュールの遅れを取り戻そうとしていた",防止策不履行理由2:"当該カーブは過去に問題がなかったため油断した",防止策不履行理由3:"無線の電池切れに気づかなかった",..._t(),リンク:"",Googleマップリンク:"",備考:"電車部材の重心が高く横転リスク大"},
+  {id:2,タイトル:"電車積載作業中のボギー台車落下による重傷事故",危険度:3,発生日時:"202405081000",天候:"晴",作業場所:"鉄道施設",案件:"",作業時間帯:"昼",作業時間:"4時間",作業内容:"電車積載",作業員:"新人",発生原因1:"玉掛けワイヤーの締め付け不足によるスリング外れ",発生原因2:"吊り上げ前の重量確認・バランス測定省略",発生原因3:"立入禁止区域への新人の誤侵入",再発防止策1:"玉掛け作業は有資格者2名以上による確認制の導入",再発防止策2:"吊り上げ前の全員退避・安全確認コールの徹底",再発防止策3:"新人は作業開始前に立入禁止区域の図面を必ず確認",防止策不履行理由1:"新人に立入禁止区域の説明がなかった",防止策不履行理由2:"有資格者が1名しかおらず確認を省略した",防止策不履行理由3:"作業前ミーティングを時間短縮のため省略",..._t(),リンク:"",Googleマップリンク:"",備考:""},
+  {id:3,タイトル:"オンレール作業中の列車接近による接触事故",危険度:3,発生日時:"202311032200",天候:"晴",作業場所:"鉄道施設",案件:"",作業時間帯:"夜",作業時間:"8時間",作業内容:"オンレール作業",作業員:"新人",発生原因1:"列車接近警報システムの誤作動による警報無視の慣習化",発生原因2:"夜間の視認性低下と作業員の退避判断遅れ",発生原因3:"緊急退避経路の事前確認不足",再発防止策1:"列車接近警報は誤作動でも必ず退避するルールの徹底",再発防止策2:"夜間作業では反射材付き高視認性ベスト着用の義務化",再発防止策3:"作業開始前に退避経路・退避場所を全員で確認",防止策不履行理由1:"過去に何度も誤作動があり警報を無視する空気があった",防止策不履行理由2:"工期が迫っており退避に時間をかけたくなかった",防止策不履行理由3:"",..._t(),リンク:"",Googleマップリンク:"",備考:"軌道内作業の基本ルール遵守が特に重要"},
+  {id:4,タイトル:"変圧器吊り上げ作業中のワイヤー破断による落下事故",危険度:3,発生日時:"202407151400",天候:"晴",作業場所:"変電所",案件:"",作業時間帯:"昼",作業時間:"5時間",作業内容:"変圧器据付",作業員:"ベテラン",発生原因1:"使用期限超過のワイヤーロープの使用継続",発生原因2:"変圧器の実重量と吊り具の定格荷重の不一致",発生原因3:"作業前の機材点検記録の形骸化",再発防止策1:"吊り具は使用前に定格荷重・使用期限を必ず確認し記録",再発防止策2:"変圧器重量は搬入仕様書で事前確認し余裕を持った吊り具選定",再発防止策3:"点検記録は第三者確認制を導入し形骸化を防止",防止策不履行理由1:"長年同じワイヤーを使用しており交換の必要性を感じなかった",防止策不履行理由2:"重量確認は現場リーダーの仕事と思っていた",防止策不履行理由3:"",..._t(),リンク:"",Googleマップリンク:"",備考:"重量物吊り作業の点検体制が最重要課題"},
+  {id:5,タイトル:"変圧器据付作業中の充電部接触による感電事故",危険度:2,発生日時:"202406201600",天候:"晴",作業場所:"変電所",案件:"",作業時間帯:"昼",作業時間:"3時間",作業内容:"変圧器据付",作業員:"新人",発生原因1:"停電確認・検電作業の省略",発生原因2:"絶縁保護具（絶縁手袋・絶縁靴）の未着用",発生原因3:"充電部の識別標識が不明瞭だった",再発防止策1:"停電作業前の検電は必ず実施しロックアウトタグアウトを適用",再発防止策2:"変電設備内作業は絶縁保護具着用を条件とし作業開始前確認",再発防止策3:"充電部の標識・色分けを整備し視認性を高める",防止策不履行理由1:"先輩が省略しているのを見て大丈夫だと思っていた",防止策不履行理由2:"絶縁手袋を置いてきてしまい取りに行く時間が惜しかった",防止策不履行理由3:"",..._t(),リンク:"",Googleマップリンク:"",備考:"電気設備作業での保護具着用は絶対条件"},
+  {id:6,タイトル:"大型風車ブレード輸送中の積荷崩れによる道路封鎖事故",危険度:3,発生日時:"202310051300",天候:"雨",作業場所:"道路",案件:"",作業時間帯:"昼",作業時間:"10時間",作業内容:"風車部材輸送",作業員:"ベテラン",発生原因1:"雨天による固定バンドの滑りと緩み",発生原因2:"60m超えのブレード輸送中の急制動による荷崩れ",発生原因3:"中間点での固定状態確認停車の省略",再発防止策1:"長尺物輸送は一定距離ごとに固定状態確認停車を実施",再発防止策2:"雨天時は固定バンドを通常より増設し滑り止めシートを敷設",再発防止策3:"急制動・急ハンドルを防ぐため前方誘導車との車間距離を十分確保",防止策不履行理由1:"時間通りに到着させるため途中停車を省略した",防止策不履行理由2:"滑り止めシートの在庫がなく対策を省略した",防止策不履行理由3:"",..._t(),リンク:"",Googleマップリンク:"",備考:"ブレード輸送は特殊車両許可が必要な高難度作業"},
+  {id:7,タイトル:"風車ブレード搬入路での接触によるトラック損傷事故",危険度:2,発生日時:"202404221030",天候:"晴",作業場所:"風車サイト",案件:"",作業時間帯:"昼",作業時間:"2時間",作業内容:"風車部材輸送",作業員:"新人",発生原因1:"搬入路の幅員確認不足によるブレード端部の電柱接触",発生原因2:"誘導員の指示伝達ミスによる操舵タイミングのズレ",発生原因3:"現地下見調査の事前実施なし",再発防止策1:"搬入路は輸送前日までに現地踏査を実施し幅員・高さを記録",再発防止策2:"誘導員と運転手の合図・コードを統一し事前に確認",再発防止策3:"狭隘箇所には専任誘導員を配置し無線で後方監視",防止策不履行理由1:"前回の輸送時と同じ道と思い込み確認を省略した",防止策不履行理由2:"新人のため誘導の合図体系を十分理解していなかった",防止策不履行理由3:"",..._t(),リンク:"",Googleマップリンク:"",備考:""},
+  {id:8,タイトル:"風車タワー建設中の高所資材落下による作業員負傷",危険度:3,発生日時:"202308171500",天候:"晴",作業場所:"風車サイト",案件:"",作業時間帯:"昼",作業時間:"8時間",作業内容:"風車建設",作業員:"新人",発生原因1:"高所でのボルト・工具の落下防止措置（ランヤード）未使用",発生原因2:"地上立入禁止エリアの設定が不十分だった",発生原因3:"強風時の作業継続（風速基準の形骸化）",再発防止策1:"高所作業では全工具・資材にランヤードを装着することを徹底",再発防止策2:"タワー基部半径20m以内を作業中は立入禁止とし誘導員を配置",再発防止策3:"風速計を設置し規定値（10m/s）超過で即時作業中断のルール化",防止策不履行理由1:"ランヤードは面倒で普段からつけていなかった",防止策不履行理由2:"立入禁止のロープが風で倒れていたが直さなかった",防止策不履行理由3:"",..._t(),リンク:"",Googleマップリンク:"",備考:"高所作業の落下物対策は全員参加で実施が必要"},
+  {id:9,タイトル:"ナセル吊り上げ作業中のガイドロープ引き込みによる骨折事故",危険度:3,発生日時:"202309281100",天候:"晴",作業場所:"風車サイト",案件:"",作業時間帯:"昼",作業時間:"6時間",作業内容:"風車建設",作業員:"ベテラン",発生原因1:"ガイドロープが急に張力を持ち作業員の手が巻き込まれた",発生原因2:"クレーンオペレーターと地上作業員の合図ミスによる不意動作",発生原因3:"ガイドロープ取り扱い手順書の不備",再発防止策1:"ガイドロープは素手で持たず必ずフック棒等の治具で誘導",再発防止策2:"クレーン操作は合図専任者の声・無線のみで動作させ勝手な判断禁止",再発防止策3:"ガイドロープ取り扱い手順書を整備し作業前に全員で確認",防止策不履行理由1:"手袋が厚くてロープ感覚がわかりにくいため素手で持った",防止策不履行理由2:"無線が聞こえず目視でオペレーターがOKと判断した",防止策不履行理由3:"",..._t(),リンク:"",Googleマップリンク:"",備考:"大型クレーン作業での合図体系の統一が最重要"},
+  {id:10,タイトル:"風車ブレード点検中の転落による重傷事故",危険度:2,発生日時:"202403121400",天候:"晴",作業場所:"風車サイト",案件:"",作業時間帯:"昼",作業時間:"5時間",作業内容:"風車メンテナンス",作業員:"ベテラン",発生原因1:"ブレード表面の結露による足場の滑り",発生原因2:"フルハーネス型安全帯のアンカー設置位置が不適切で制動距離超過",発生原因3:"単独作業中の転落で発見が遅れた",再発防止策1:"ブレード作業前に結露・濡れ状態を確認し乾燥させてから実施",再発防止策2:"アンカー位置は転落距離をゼロにできる箇所を選び複数点設置",再発防止策3:"高所作業は必ず2名以上で実施し相互確認体制を構築",防止策不履行理由1:"ベテランなので一人でもできると判断した",防止策不履行理由2:"アンカー設置に時間がかかるため簡易的な位置を選んだ",防止策不履行理由3:"",..._t(),リンク:"",Googleマップリンク:"",備考:"メンテナンス作業の単独実施は高リスク"}
+];
+
+const INIT_MST={
+  作業場所:["道路","港","工場","風車サイト","鉄道施設","変電所"],
+  天候:["晴","雨","雪","曇り","強風"],
+  案件:["東伊豆風車","むつ小川原風車"],
+  作業時間帯:["昼","夜","早朝"],
+  作業内容:["電車輸送","電車積載","オンレール作業","変圧器据付","風車部材輸送","風車建設","風車メンテナンス","クレーン操作","高所作業","吊り上げ作業"],
+  作業員:["新人","ベテラン","中堅"]
+};
+
+const INIT_HINTS={
+  作業場所:"例）東伊豆風車",
+  天候:"例）雨",
+  案件:"例）東伊豆風車",
+  作業時間帯:"例）昼",
+  作業内容:"例）荷積み",
+  作業員:"例）新人"
+};
+
+/* ═══════════════════════════════════════════
+   2. STORAGE
+═══════════════════════════════════════════ */
+const DATA_VER='r3'; // INIT_DATAのバージョン。変更時はLocalStorageを自動リセット
+function loadData(){
+  if(localStorage.getItem('aegis_data_ver')!==DATA_VER){
+    localStorage.setItem('aegis_data',JSON.stringify(INIT_DATA));
+    localStorage.setItem('aegis_data_ver',DATA_VER);
+    return INIT_DATA;
+  }
+  const r=localStorage.getItem('aegis_data');
+  if(!r){localStorage.setItem('aegis_data',JSON.stringify(INIT_DATA));return INIT_DATA;}
+  return JSON.parse(r);
+}
+function saveData(d){localStorage.setItem('aegis_data',JSON.stringify(d));}
+function loadMST(){const r=localStorage.getItem('aegis_mst');if(!r){localStorage.setItem('aegis_mst',JSON.stringify(INIT_MST));return INIT_MST;}const m=JSON.parse(r);if(!m.案件)m.案件=INIT_MST.案件;return m;}
+function saveMST(m){localStorage.setItem('aegis_mst',JSON.stringify(m));}
+function loadHints(){const r=localStorage.getItem('aegis_hints');if(!r){localStorage.setItem('aegis_hints',JSON.stringify(INIT_HINTS));return INIT_HINTS;}return Object.assign({},INIT_HINTS,JSON.parse(r));}
+function saveHints(h){localStorage.setItem('aegis_hints',JSON.stringify(h));}
+function loadVer(){return localStorage.getItem('aegis_ver')||'v1.0';}
+function saveVer(v){localStorage.setItem('aegis_ver',v);}
+function loadLang(){return localStorage.getItem('aegis_lang')||'jp';}
+function saveLang(l){localStorage.setItem('aegis_lang',l);}
+function nextId(){const d=loadData();return d.length===0?1:Math.max(...d.map(x=>x.id))+1;}
+
+/* ═══════════════════════════════════════════
+   3. AUTH
+═══════════════════════════════════════════ */
+const USERS={'achiha':{pw:'Since1923',role:'user'},'achihaikeda':{pw:'Since1923',role:'admin'}};
+let CU=null;
+
+function doLogin(){
+  const id=document.getElementById('li_id').value.trim();
+  const pw=document.getElementById('li_pw').value;
+  const err=document.getElementById('li_err');
+  if(!id||!pw){err.textContent='IDとパスワードを入力してください';return;}
+  const u=USERS[id];
+  if(!u||u.pw!==pw){err.textContent='IDまたはパスワードが正しくありません';return;}
+  err.textContent='';CU={id,role:u.role};
+  if(u.role==='admin') showAdmin(); else showMain();
+}
+function doLogout(){CU=null;document.getElementById('li_id').value='';document.getElementById('li_pw').value='';showScreen('loginScreen');}
+['li_pw','li_id'].forEach(id=>document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();}));
+
+/* ═══════════════════════════════════════════
+   4. SCREENS
+═══════════════════════════════════════════ */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>{s.style.display='none';s.classList.remove('active');});
+  const el=document.getElementById(id);el.style.display='block';el.classList.add('active');
+  updateSysbar();
+}
+function showMain(){
+  showScreen('mainScreen');
+  document.getElementById('adminNavBtn').style.display=(CU&&CU.role==='admin')?'inline':'none';
+  fillDiagDropdowns();
+  document.getElementById('resultWrap').classList.remove('show');
+  setTimeout(applyLang,0);
+}
+function showAdmin(){
+  showScreen('adminScreen');
+  fillAdminDropdowns();
+  renderDataList();
+  renderMasters();
+  document.getElementById('cfg_ver').value=loadVer();
+}
+
+/* ═══════════════════════════════════════════
+   5. HEADER
+═══════════════════════════════════════════ */
+function updateSysbar(){
+  const cnt=loadData().length;
+  const ver=loadVer();
+  ['sbCount','sbCountAdmin'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=cnt;});
+  ['sbVer','sbVerAdmin'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=ver;});
+  requestAnimationFrame(updateHdrOffset);
+}
+
+function updateHdrOffset(){
+  const bars=['mainTopbar','adminTopbar'];
+  let h=0;
+  bars.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){
+      const r=el.getBoundingClientRect();
+      if(r.height>0)h=r.height;
+    }
+  });
+  if(h>0)document.documentElement.style.setProperty('--hdr-h',h+'px');
+}
+
+/* ── Scroll auto-hide ── */
+(function(){
+  let lastY=0,ticking=false;
+  function onScroll(){
+    if(ticking)return;
+    ticking=true;
+    requestAnimationFrame(()=>{
+      const y=window.scrollY||window.pageYOffset;
+      const bars=document.querySelectorAll('.topbar');
+      if(y>lastY&&y>80){
+        // scrolling down → hide
+        bars.forEach(b=>b.classList.add('bar-hide'));
+      } else if(y<lastY-4){
+        // scrolling up → show
+        bars.forEach(b=>b.classList.remove('bar-hide'));
+      }
+      lastY=y;
+      ticking=false;
+    });
+  }
+  window.addEventListener('scroll',onScroll,{passive:true});
+  window.addEventListener('resize',updateHdrOffset,{passive:true});
+})();
+
+/* ═══════════════════════════════════════════
+   6. DROPDOWNS
+═══════════════════════════════════════════ */
+function fillSel(id,key,cur,blank){
+  const m=loadMST();const h=loadHints();const sel=document.getElementById(id);if(!sel)return;
+  const isAdmin=!!blank;
+  const hint=isAdmin?null:(h[key]||null);
+  const noSel=blank||'-- 未選択 --';
+  // hint: disabled+hidden → shows as placeholder, NOT in dropdown list
+  sel.innerHTML=(hint?`<option value="" disabled style="display:none">${hint}</option>`:'')
+    +`<option value="">${noSel}</option>`;
+  (m[key]||[]).forEach(v=>{
+    const o=document.createElement('option');o.value=v;o.textContent=v;
+    if(v===cur)o.selected=true;
+    sel.appendChild(o);
+  });
+  // placeholder color
+  const updateColor=()=>sel.classList.toggle('sel-empty',!sel.value);
+  updateColor();
+  sel.removeEventListener('change',sel._colorHandler);
+  sel._colorHandler=updateColor;
+  sel.addEventListener('change',sel._colorHandler);
+}
+function fillDiagDropdowns(){
+  fillSel('i_place','作業場所');fillSel('i_weather','天候');fillSel('i_project','案件');
+  fillSel('i_time','作業時間帯');fillSel('i_work','作業内容');fillSel('i_worker','作業員');
+}
+function fillAdminDropdowns(vals={}){
+  fillSel('f_place','作業場所',vals.p,'-- 未選択 --');fillSel('f_weather','天候',vals.w,'-- 未選択 --');
+  fillSel('f_project','案件',vals.proj,'-- 未選択 --');
+  fillSel('f_time','作業時間帯',vals.t,'-- 未選択 --');fillSel('f_work','作業内容',vals.wk,'-- 未選択 --');fillSel('f_worker','作業員',vals.wr,'-- 未選択 --');
+}
+
+/* ═══════════════════════════════════════════
+   7. DIAGNOSTIC LOGIC
+═══════════════════════════════════════════ */
+let lastDiagState={};
+
+function diagnose(){
+  const place=document.getElementById('i_place').value;
+  const weather=document.getElementById('i_weather').value;
+  const project=document.getElementById('i_project').value;
+  const time=document.getElementById('i_time').value;
+  const work=document.getElementById('i_work').value;
+  const worker=document.getElementById('i_worker').value;
+  lastDiagState={place,weather,project,time,work,worker};
+
+  const data=loadData();
+
+  // First pass: count full project matches
+  const fullProjCount=project?data.filter(r=>r.案件===project).length:0;
+
+  const scored=data.map(rec=>{
+    let s=0;
+    if(place&&rec.作業場所===place) s+=3;
+    if(weather&&rec.天候===weather) s+=3;
+    if(time&&rec.作業時間帯===time) s+=2;
+    if(work){if(rec.作業内容===work)s+=3;else if(rec.作業内容&&(rec.作業内容.includes(work)||work.includes(rec.作業内容)))s+=1;}
+    if(worker&&rec.作業員===worker) s+=1;
+    if(project){
+      if(rec.案件===project) s+=5;
+      else if(fullProjCount<3&&rec.案件&&(rec.案件.includes(project)||project.includes(rec.案件))) s+=2;
+    }
+    return{rec,s};
+  }).sort((a,b)=>b.s!==a.s?b.s-a.s:Math.random()-.5);
+
+  const major=scored.filter(x=>parseInt(x.rec.危険度)===3).slice(0,3).map(x=>x.rec);
+  const minor=scored.filter(x=>parseInt(x.rec.危険度)<3).slice(0,3).map(x=>x.rec);
+  const top3=scored.slice(0,3).map(x=>x.rec);
+
+  const majorDisplay=major.length?major:scored.slice(0,2).map(x=>x.rec);
+  const minorDisplay=minor.length?minor:[];
+
+  const measures=summarize([...top3.map(r=>r.再発防止策1),...top3.map(r=>r.再発防止策2),...top3.map(r=>r.再発防止策3)]);
+  const causes=summarize([...top3.map(r=>r.発生原因1),...top3.map(r=>r.発生原因2),...top3.map(r=>r.発生原因3)]);
+  const reasons=summarize([...top3.map(r=>r.防止策不履行理由1),...top3.map(r=>r.防止策不履行理由2),...top3.map(r=>r.防止策不履行理由3)]);
+  const maxD=Math.max(...top3.map(r=>parseInt(r.危険度)||1));
+
+  const majorMsr=summarize([...majorDisplay.map(r=>r.再発防止策1),...majorDisplay.map(r=>r.再発防止策2),...majorDisplay.map(r=>r.再発防止策3)]);
+  const minorMsr=summarize([...minorDisplay.map(r=>r.再発防止策1),...minorDisplay.map(r=>r.再発防止策2),...minorDisplay.map(r=>r.再発防止策3)]);
+
+  lastDiagState.major=majorDisplay;lastDiagState.minor=minorDisplay;
+  lastDiagState.causes=causes;lastDiagState.measures=measures;lastDiagState.reasons=reasons;
+
+  renderResults(majorDisplay,minorDisplay,majorMsr,minorMsr,maxD);
+}
+
+function summarize(items){
+  const clean=items.filter(s=>s&&s.trim());
+  const freq={};clean.forEach(s=>{freq[s]=(freq[s]||0)+1;});
+  return[...new Set(clean)].sort((a,b)=>freq[b]-freq[a]).slice(0,3);
+}
+
+/* ═══════════════════════════════════════════
+   8. RENDER RESULTS
+═══════════════════════════════════════════ */
+function renderResults(major,minor,majorMsr,minorMsr,danger){
+  const lvCls='lv'+danger;
+  const lvNames=['','低リスク','中リスク','高リスク（要注意）'];
+  const stars='★'.repeat(danger)+'☆'.repeat(3-danger);
+  document.getElementById('r_dangerRow').innerHTML=
+    `<div class="danger-row ${lvCls}">
+       <div class="danger-stars">${stars}</div>
+       <div class="danger-info">
+         <div class="dlbl">DANGER LEVEL ${danger}</div>
+         <div class="dname">${lvNames[danger]}</div>
+       </div>
+     </div>`;
+
+  document.getElementById('r_major').innerHTML=renderAccordions(major,'h')||'<div class="no-data" style="padding:16px;font-size:.8rem">該当する重大事故データなし</div>';
+  document.getElementById('r_minor').innerHTML=renderAccordions(minor,'l')||'<div class="no-data" style="padding:16px;font-size:.8rem">該当する軽度トラブルデータなし</div>';
+
+  // Split measures display
+  const hiHtml=majorMsr.length?majorMsr.map(m=>`<div class="m-row">${esc(m)}</div>`).join(''):'<div class="m-row" style="color:var(--gr);font-size:.78rem">データなし</div>';
+  const loHtml=minorMsr.length?minorMsr.map(m=>`<div class="m-row">${esc(m)}</div>`).join(''):'<div class="m-row" style="color:var(--gr);font-size:.78rem">データなし</div>';
+  document.getElementById('r_measures').innerHTML=`
+    <div class="msplit-wrap">
+      <div class="msplit-card msplit-hi">
+        <div class="msplit-lbl msplit-lbl-hi">▲ 重大事故対策</div>${hiHtml}
+      </div>
+      <div class="msplit-card msplit-lo">
+        <div class="msplit-lbl msplit-lbl-lo">◆ 軽度トラブル対策</div>${loHtml}
+      </div>
+    </div>`;
+
+  const w=document.getElementById('resultWrap');
+  w.classList.remove('show');void w.offsetWidth;w.classList.add('show');
+  setTimeout(()=>w.scrollIntoView({behavior:'smooth',block:'start'}),80);
+}
+
+function renderAccordions(recs,prefix){
+  return recs.map((r,i)=>{
+    const lv=parseInt(r.危険度)||1;
+    const badgeCls=lv===3?'badge-hi':lv===2?'badge-md':'badge-lo';
+    const badgeTxt=lv===3?'HIGH':lv===2?'MID':'LOW';
+    const barCls=lv===3?'acc-bar-hi':lv===2?'acc-bar-md':'acc-bar-lo';
+    const causes=[r.発生原因1,r.発生原因2,r.発生原因3].filter(x=>x&&x.trim());
+    const ms=[r.再発防止策1,r.再発防止策2,r.再発防止策3].filter(x=>x&&x.trim());
+    const id='acc_'+prefix+i;
+    const dtStr=r.発生日時?formatDT(r.発生日時):'';
+    const mapBtn=r.Googleマップリンク?`<a class="map-btn" href="${esc(r.Googleマップリンク)}" target="_blank" rel="noopener">🗺️ 地図・ストリートビューで確認</a>`:'';
+    const chevron=`<svg class="acc-arr" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="5,7 10,13 15,7"/></svg>`;
+    return`<div class="acc">
+      <div class="acc-hdr" id="hdr_${id}" onclick="toggleAcc('${id}')">
+        <div class="acc-bar ${barCls}"></div>
+        <div class="acc-left">
+          <span class="acc-badge ${badgeCls}">${badgeTxt}</span>
+          <span class="acc-ttl">${esc(r.タイトル)}</span>
+        </div>
+        ${chevron}
+      </div>
+      <div class="acc-body" id="${id}">
+        <div class="acc-body-inner">
+          ${causes.length?`<div class="acc-sec acc-sec-cause">発生原因</div>${causes.map(c=>`<div class="acc-li">${esc(c)}</div>`).join('')}`:''}
+          ${ms.length?`<div class="acc-sec acc-sec-msr">推奨対策</div>${ms.map(m=>`<div class="acc-li">${esc(m)}</div>`).join('')}`:''}
+          <div class="acc-sec acc-sec-ref">根拠データ</div>
+          <div class="acc-li">${esc(r.タイトル)}${r.リンク?` <a class="acc-link" href="${esc(r.リンク)}" target="_blank" rel="noopener">[リンク]</a>`:''}</div>
+          ${dtStr?`<div class="acc-li" style="font-size:.75rem;color:var(--gr)">発生日時: ${esc(dtStr)}</div>`:''}
+          ${r.案件?`<div class="acc-li" style="font-size:.75rem;color:var(--gr)">案件: ${esc(r.案件)}</div>`:''}
+          ${mapBtn}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleAcc(id){
+  const body=document.getElementById(id);
+  const hdr=document.getElementById('hdr_'+id);
+  const isOpen=body.classList.contains('open');
+  body.classList.toggle('open',!isOpen);
+  hdr.classList.toggle('open',!isOpen);
+}
+
+function formatDT(s){
+  if(!s)return'';
+  const m=s.match(/^(\d{4})(\d{2})(\d{2})(\d{2}:\d{2})?$/);
+  if(m)return`${m[1]}年${m[2]}月${m[3]}日${m[4]?' '+m[4]:''}`;
+  return s;
+}
+
+/* ═══════════════════════════════════════════
+   9. STAGE 2 – AI PROMPT
+═══════════════════════════════════════════ */
+function genPrompt(){
+  const s=lastDiagState;
+  const isEn=LANG==='en';
+  if(!s.major){alert(isEn?'Please run a diagnosis first.':'先に診断を実行してください');return;}
+
+  const none=isEn?'(none)':'（なし）';
+  const majTxt=(s.major||[]).map((r,i)=>`  ${i+1}. ${r.タイトル} (Danger:${r.危険度})`).join('\n')||none;
+  const minTxt=(s.minor||[]).map((r,i)=>`  ${i+1}. ${r.タイトル} (Danger:${r.危険度})`).join('\n')||none;
+  const cauTxt=(s.causes||[]).map((c,i)=>`  ${i+1}. ${c}`).join('\n')||none;
+  const rsnTxt=(s.reasons||[]).map((r,i)=>`  ${i+1}. ${r}`).join('\n')||none;
+  const unsel=isEn?'Not selected':'未選択';
+
+  const prompt=isEn?
+`You are a world-class safety management and occupational accident analysis expert AI.
+Please respond entirely in English.
+Based on the work conditions and internal accident data below, create a detailed safety risk analysis report.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[WORK CONDITIONS] (AEGIS Input Data)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+■ Location    : ${s.place||unsel}
+■ Weather     : ${s.weather||unsel}
+■ Project     : ${s.project||unsel}
+■ Time Slot   : ${s.time||unsel}
+■ Work Type   : ${s.work||unsel}
+■ Worker      : ${s.worker||unsel}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[INTERNAL ACCIDENT DATA (AEGIS Analysis)]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+■ Critical Accident Risks (HIGH):
+${majTxt}
+
+■ Minor Trouble Risks:
+${minTxt}
+
+■ Key Causes from Internal Data:
+${cauTxt}
+
+■ Reasons Preventive Measures Were Not Followed:
+${rsnTxt}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[ANALYSIS REQUEST]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Based on the above, please provide a detailed safety risk analysis report covering the following:
+
+1. [Domestic (Japan) Accident Cases]
+   - Similar serious/fatal accidents in Japan (year, location, summary, casualties, causes)
+   - Official reports/statistics from MHLW, MLIT, Fire Agency etc. (with sources)
+   - News coverage from NHK, Nikkei etc.
+   - YouTube/news video search keywords related to this type of accident
+
+2. [International Accident Cases]
+   - Similar accidents in the US, Europe, Asia etc. (country, year, summary, casualties, causes)
+   - International agency reports: OSHA, ILO, EU-OSHA etc. (with sources)
+   - International news and accident investigation report references
+   - YouTube/international safety training video search keywords
+
+3. [Deep Analysis of Non-Compliance with Preventive Measures]
+   - Recorded reasons for non-compliance: ${rsnTxt}
+   - Deep analysis of organizational, psychological, and environmental factors
+   - Analysis through Human Error Theory (Swiss Cheese Model, Heinrich's Law etc.)
+   - Specific measures to fundamentally eliminate similar non-compliance patterns
+
+4. [Latent Risks & Oversights]
+   - Potential risks not in internal data but suggested by the conditions
+   - Escalation patterns from minor troubles to serious accidents
+
+5. [Measures Based on International Safety Standards]
+   - ISO, OSHA, ILO standards and regulations with specific standard numbers
+   - Industry/work-specific regulations and guidelines
+   - Best practice safety management examples from leading countries
+
+6. [Actionable Safety Checklist]
+   - Pre-work, during-work, post-work checkpoints (bullet points)
+   - Equipment, training, and management measures respectively
+
+Please include as much data, statistics, and sources as possible to provide specific, immediately actionable information for site managers.`
+  :
+`あなたは世界最高水準の安全管理・労働災害分析の専門家AIです。
+以下の作業条件と社内過去事故データをもとに、詳細な安全リスク分析レポートを日本語で作成してください。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+【作業条件】（AEGIS入力データ）
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+■ 作業場所　: ${s.place||unsel}
+■ 天候　　　: ${s.weather||unsel}
+■ 案件　　　: ${s.project||unsel}
+■ 作業時間帯: ${s.time||unsel}
+■ 作業内容　: ${s.work||unsel}
+■ 作業員　　: ${s.worker||unsel}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+【社内過去事故データ（AEGISシステム解析結果）】
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+■ 想定重大事故（危険度HIGH）:
+${majTxt}
+
+■ 想定軽度トラブル:
+${minTxt}
+
+■ 社内データから抽出した主要原因:
+${cauTxt}
+
+■ 防止策が守られなかった主な理由（社内データより）:
+${rsnTxt}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+【解析依頼】
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+上記データをふまえ、以下の各項目について詳細な安全リスク分析レポートを作成してください。
+
+1. 【日本国内の同種事故事例】
+   ・上記条件に類似した国内の重大事故・死亡事故事例（発生年・場所・概要・死傷者数・原因）
+   ・厚生労働省・国土交通省・消防庁等の公式レポート・統計データ（出典付き）
+   ・NHKニュース・日本経済新聞等の報道事例
+   ・関連するYouTube動画・ニュース映像・事故解説動画のキーワードや検索ワードを提示
+
+2. 【海外の同種事故事例】
+   ・米国・欧州・アジア等での類似重大事故事例（発生国・年・概要・死傷者数・原因）
+   ・OSHA・ILO・EU-OSHA等の国際機関レポート（出典付き）
+   ・海外ニュース・事故調査報告書の参照元
+   ・関連するYouTube動画・海外事故映像・安全教育動画のキーワードや検索ワードを提示
+
+3. 【防止策不履行の深層分析】
+   ・社内データに記録された不履行理由: ${rsnTxt}
+   ・これらの背景にある組織的・心理的・環境的要因の深層分析
+   ・ヒューマンエラー理論（スイスチーズモデル・ハインリッヒの法則等）からの考察
+   ・同様の不履行パターンを根本から解消するための具体的施策
+
+4. 【潜在リスク・見落とし】
+   ・上記条件から想定されるが社内データにない潜在リスク
+   ・軽度トラブルから重大事故へのエスカレーションパターン
+
+5. 【国際安全基準に基づく対策】
+   ・ISO・OSHA・ILO等の国際安全基準・規制（具体的な規格番号を含む）
+   ・業種・作業内容に特化した法規制・ガイドライン
+   ・先進国の安全管理ベストプラクティス事例
+
+6. 【即実践できる安全対策チェックリスト】
+   ・作業前・作業中・作業後の確認事項（箇条書き）
+   ・設備面・教育面・管理面それぞれの対策
+
+根拠となるデータ・統計・情報源を可能な限り含め、現場管理者が明日から使える具体的な内容で回答してください。`;
+
+  navigator.clipboard.writeText(prompt).then(()=>{
+    const ok=document.getElementById('copyOk');ok.classList.add('show');
+    setTimeout(()=>ok.classList.remove('show'),3000);
+  }).catch(()=>{
+    const ta=document.createElement('textarea');ta.value=prompt;ta.style.position='fixed';ta.style.top='-9999px';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+    const ok=document.getElementById('copyOk');ok.classList.add('show');setTimeout(()=>ok.classList.remove('show'),3000);
+  });
+}
+
+/* ═══════════════════════════════════════════
+   10. ADMIN – DATA LIST
+═══════════════════════════════════════════ */
+function renderDataList(){
+  const data=loadData();
+  const btn=document.getElementById('tb_list');
+  btn.innerHTML='事故データ<span class="badge">'+data.length+'</span>';
+  const el=document.getElementById('dataList');
+  if(!data.length){el.innerHTML='<div class="no-data">データがありません</div>';return;}
+  el.innerHTML=data.map(r=>{
+    const dc='td'+(r.危険度||1);
+    const dl=['','危険度:低','危険度:中','危険度:高'][r.危険度||1]||'';
+    return`<div class="dc">
+      <div class="dc-top">
+        <div class="dc-ttl">${esc(r.タイトル)}</div>
+        <div class="dc-acts">
+          <button class="btn btn-c btn-sm" onclick="editRec(${r.id})">編集</button>
+          <button class="btn btn-glass btn-sm" onclick="exportRec(${r.id})" title="このデータをエクスポート">📤</button>
+          <button class="btn btn-del btn-sm" onclick="delRec(${r.id})">削除</button>
+        </div>
+      </div>
+      <div class="dc-meta">
+        ${r.作業場所?`<span class="tag tp">${esc(r.作業場所)}</span>`:''}
+        ${r.天候?`<span class="tag tw">${esc(r.天候)}</span>`:''}
+        ${r.案件?`<span class="tag" style="background:rgba(41,121,255,.1);color:#7eb3ff;border:1px solid rgba(41,121,255,.25)">${esc(r.案件)}</span>`:''}
+        ${r.作業時間帯?`<span class="tag tt">${esc(r.作業時間帯)}</span>`:''}
+        ${r.作業員?`<span class="tag tk">${esc(r.作業員)}</span>`:''}
+        ${r.作業内容?`<span class="tag" style="background:rgba(255,255,255,.05);color:var(--gr);border:1px solid rgba(255,255,255,.1)">${esc(r.作業内容)}</span>`:''}
+        <span class="tag ${dc}">${dl}</span>
+      </div>
+      ${r.発生原因1?`<div class="dc-cause">原因: ${esc(r.発生原因1)}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+/* ═══════════════════════════════════════════
+   11. ADMIN – CRUD
+═══════════════════════════════════════════ */
+function saveRec(){
+  const fid=document.getElementById('f_id').value;
+  const title=document.getElementById('f_title').value.trim();
+  if(!title){alert('タイトルは必須です');return;}
+  const extras=document.getElementById('f_tx').value.split(',').map(t=>t.trim());
+  const rec={
+    id:fid?parseInt(fid):nextId(),
+    タイトル:title,危険度:parseInt(document.getElementById('f_danger').value)||1,
+    発生日時:gv('f_dt'),天候:gv('f_weather'),作業場所:gv('f_place'),案件:gv('f_project'),
+    作業時間帯:gv('f_time'),作業時間:gv('f_wtime'),作業内容:gv('f_work'),作業員:gv('f_worker'),
+    発生原因1:gv('f_c1'),発生原因2:gv('f_c2'),発生原因3:gv('f_c3'),
+    再発防止策1:gv('f_m1'),再発防止策2:gv('f_m2'),再発防止策3:gv('f_m3'),
+    防止策不履行理由1:gv('f_r1'),防止策不履行理由2:gv('f_r2'),防止策不履行理由3:gv('f_r3'),
+    タグ1:gv('f_t1'),タグ2:gv('f_t2'),タグ3:gv('f_t3'),タグ4:gv('f_t4'),タグ5:gv('f_t5'),
+    タグ6:extras[0]||'',タグ7:extras[1]||'',タグ8:extras[2]||'',タグ9:extras[3]||'',タグ10:extras[4]||'',
+    タグ11:extras[5]||'',タグ12:extras[6]||'',タグ13:extras[7]||'',タグ14:extras[8]||'',タグ15:extras[9]||'',
+    タグ16:extras[10]||'',タグ17:extras[11]||'',タグ18:extras[12]||'',タグ19:extras[13]||'',タグ20:extras[14]||'',
+    リンク:gv('f_link'),Googleマップリンク:gv('f_gmap'),備考:gv('f_note')
+  };
+  let data=loadData();
+  if(fid){const i=data.findIndex(d=>d.id===parseInt(fid));if(i>=0)data[i]=rec;}
+  else data.push(rec);
+  saveData(data);clearForm();renderDataList();switchTab('list');updateSysbar();
+  alert(fid?'更新しました':'追加しました');
+}
+
+function gv(id){return document.getElementById(id)?document.getElementById(id).value:'';}
+
+function editRec(id){
+  const r=loadData().find(d=>d.id===id);if(!r)return;
+  document.getElementById('f_id').value=r.id;
+  const map={title:'タイトル',dt:'発生日時',wtime:'作業時間',c1:'発生原因1',c2:'発生原因2',c3:'発生原因3',m1:'再発防止策1',m2:'再発防止策2',m3:'再発防止策3',r1:'防止策不履行理由1',r2:'防止策不履行理由2',r3:'防止策不履行理由3',t1:'タグ1',t2:'タグ2',t3:'タグ3',t4:'タグ4',t5:'タグ5',link:'リンク',gmap:'Googleマップリンク',note:'備考'};
+  Object.entries(map).forEach(([k,v])=>{const el=document.getElementById('f_'+k);if(el&&r[v]!==undefined)el.value=r[v]||'';});
+  document.getElementById('f_danger').value=r.危険度||1;
+  const ex=[r.タグ6,r.タグ7,r.タグ8,r.タグ9,r.タグ10,r.タグ11,r.タグ12,r.タグ13,r.タグ14,r.タグ15,r.タグ16,r.タグ17,r.タグ18,r.タグ19,r.タグ20].filter(t=>t&&t.trim()).join(', ');
+  document.getElementById('f_tx').value=ex;
+  fillAdminDropdowns({p:r.作業場所,w:r.天候,proj:r.案件,t:r.作業時間帯,wk:r.作業内容,wr:r.作業員});
+  setTimeout(()=>{
+    document.getElementById('f_place').value=r.作業場所||'';
+    document.getElementById('f_weather').value=r.天候||'';
+    document.getElementById('f_project').value=r.案件||'';
+    document.getElementById('f_time').value=r.作業時間帯||'';
+    document.getElementById('f_work').value=r.作業内容||'';
+    document.getElementById('f_worker').value=r.作業員||'';
+  },0);
+  switchTab('form');
+  document.querySelector('.aform').scrollIntoView({behavior:'smooth'});
+}
+
+function delRec(id){
+  const ok=window.confirm('このデータを削除しますか？\nID: '+id);
+  if(!ok)return;
+  const sid=String(id);
+  const before=loadData().length;
+  saveData(loadData().filter(d=>String(d.id)!==sid));
+  renderDataList();updateSysbar();
+}
+
+function clearForm(){
+  document.getElementById('f_id').value='';
+  document.querySelectorAll('#tp_form input,#tp_form select,#tp_form textarea').forEach(el=>{
+    if(el.id==='f_danger')el.value='1';else el.value='';
+  });
+}
+
+/* ═══════════════════════════════════════════
+   12. TEXT FILE UPLOAD
+═══════════════════════════════════════════ */
+function handleFileUpload(input){
+  const files=Array.from(input.files);
+  if(!files.length)return;
+  let added=0;let errors=[];
+  const readers=files.map(file=>new Promise(resolve=>{
+    const fr=new FileReader();
+    fr.onload=e=>{
+      const text=e.target.result;
+      // Split by --- separator for multiple records
+      const blocks=text.split(/\n---+\n/).map(b=>b.trim()).filter(b=>b);
+      blocks.forEach(block=>{
+        try{
+          const rec=parseTxt(block);
+          if(rec.タイトル){
+            rec.id=nextId();
+            const data=loadData();data.push(rec);saveData(data);added++;
+          }else{errors.push(file.name+': タイトルが見つかりません');}
+        }catch(e){errors.push(file.name+': 解析エラー');}
+      });
+      resolve();
+    };
+    fr.readAsText(file,'UTF-8');
+  }));
+  Promise.all(readers).then(()=>{
+    const el=document.getElementById('uploadResult');
+    el.textContent=`✓ ${added}件 追加しました${errors.length?' / エラー:'+errors.join(', '):''}`;
+    renderDataList();updateSysbar();input.value='';
+  });
+}
+
+function parseTxt(text){
+  const rec={};
+  const fields=['タイトル','危険度','発生日時','天候','作業場所','案件',
+    '作業時間帯','作業時間','作業内容','作業員',
+    '発生原因1','発生原因2','発生原因3',
+    '再発防止策1','再発防止策2','再発防止策3',
+    '防止策不履行理由1','防止策不履行理由2','防止策不履行理由3',
+    ...Array.from({length:20},(_,i)=>'タグ'+(i+1)),
+    'リンク','Googleマップリンク','備考'];
+  const fmap={};fields.forEach(f=>fmap[f]=f);
+  text.split('\n').forEach(line=>{
+    const m=line.match(/^(.+?)：(.*)$/);
+    if(m){const key=m[1].trim();const val=m[2].trim();if(fmap[key])rec[fmap[key]]=val;}
+  });
+  if(rec.危険度)rec.危険度=parseInt(rec.危険度)||1;
+  for(let i=1;i<=20;i++){if(!rec['タグ'+i])rec['タグ'+i]='';}
+  if(!rec.リンク)rec.リンク='';if(!rec.Googleマップリンク)rec.Googleマップリンク='';
+  if(!rec.案件)rec.案件='';if(!rec.備考)rec.備考='';
+  return rec;
+}
+
+function exportRec(id){
+  const r=loadData().find(d=>String(d.id)===String(id));if(!r)return;
+  const fields=['タイトル','危険度','発生日時','天候','作業場所','案件',
+    '作業時間帯','作業時間','作業内容','作業員',
+    '発生原因1','発生原因2','発生原因3',
+    '再発防止策1','再発防止策2','再発防止策3',
+    '防止策不履行理由1','防止策不履行理由2','防止策不履行理由3',
+    ...Array.from({length:20},(_,i)=>'タグ'+(i+1)),
+    'リンク','Googleマップリンク','備考'];
+  const txt=fields.map(f=>`${f}：${r[f]!==undefined?r[f]:''}`).join('\n');
+  const safe=(r.タイトル||'record').replace(/[\\/:*?"<>|]/g,'_').slice(0,40);
+  const blob=new Blob([txt],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='aegis_'+safe+'.txt';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+}
+
+function exportData(){
+  const data=loadData();
+  const fields=['タイトル','危険度','発生日時','天候','作業場所','案件',
+    '作業時間帯','作業時間','作業内容','作業員',
+    '発生原因1','発生原因2','発生原因3',
+    '再発防止策1','再発防止策2','再発防止策3',
+    '防止策不履行理由1','防止策不履行理由2','防止策不履行理由3',
+    ...Array.from({length:20},(_,i)=>'タグ'+(i+1)),
+    'リンク','Googleマップリンク','備考'];
+  const txt=data.map(r=>fields.map(f=>`${f}：${r[f]!==undefined?r[f]:''}`).join('\n')).join('\n---\n');
+  const blob=new Blob([txt],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='aegis_export_'+new Date().toISOString().slice(0,10)+'.txt';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+}
+
+/* ═══════════════════════════════════════════
+   13. TAB SWITCH
+═══════════════════════════════════════════ */
+function switchTab(t){
+  const map={list:'tp_list',form:'tp_form',file:'tp_file',mst:'tp_mst',cfg:'tp_cfg'};
+  const bmap={list:'tb_list',form:'tb_form',file:'tb_file',mst:'tb_mst',cfg:'tb_cfg'};
+  Object.keys(map).forEach(k=>{
+    document.getElementById(map[k]).classList.toggle('on',k===t);
+    document.getElementById(bmap[k]).classList.toggle('on',k===t);
+  });
+  if(t==='form')fillAdminDropdowns();
+  if(t==='cfg')document.getElementById('cfg_ver').value=loadVer();
+}
+
+/* ═══════════════════════════════════════════
+   14. MASTER
+═══════════════════════════════════════════ */
+function renderMasters(){
+  const m=loadMST();const h=loadHints();
+  const hintKeys=['作業場所','天候','案件','作業時間帯','作業内容','作業員'];
+  const hintHtml=`<div class="msec"><h3>ヒントテキスト管理</h3>
+    <p style="font-size:.75rem;color:var(--gr);margin-bottom:10px;">各ドロップダウンの未選択時に表示するヒント文字列を設定します。</p>
+    <div class="hint-grid">${hintKeys.map(k=>`
+      <div class="hint-row">
+        <label>${esc(k)}</label>
+        <input type="text" id="hint_${k}" value="${esc(h[k]||'')}" placeholder="例）値">
+      </div>`).join('')}
+    </div>
+    <div style="margin-top:9px;">
+      <button class="btn-madd" onclick="saveHintEdits()">ヒントを保存</button>
+    </div>
+  </div>`;
+
+  document.getElementById('masterList').innerHTML=Object.keys(m).map(key=>`
+    <div class="msec">
+      <h3>${esc(key)}</h3>
+      <div class="mitems">${(m[key]||[]).map((v,i)=>`
+        <div class="mitem">
+          <button class="mord" onclick="moveMaster('${esc(key)}',${i},-1)" title="上へ">▲</button>
+          <button class="mord" onclick="moveMaster('${esc(key)}',${i},1)" title="下へ">▼</button>
+          <span>${esc(v)}</span>
+          <button class="mdel" onclick="delMaster('${esc(key)}','${esc(v)}')" title="削除">✕</button>
+        </div>`).join('')}
+      </div>
+      <div class="madd"><input type="text" id="mi_${key}" placeholder="新しい選択肢を追加"><button class="btn-madd" onclick="addMaster('${esc(key)}')">追加</button></div>
+    </div>`).join('')+hintHtml;
+}
+function addMaster(key){
+  const inp=document.getElementById('mi_'+key);const v=inp.value.trim();if(!v)return;
+  const m=loadMST();if(!m[key])m[key]=[];if(m[key].includes(v)){alert('既に存在します');return;}
+  m[key].push(v);saveMST(m);inp.value='';renderMasters();fillDiagDropdowns();
+}
+function delMaster(key,val){
+  if(!confirm(`「${val}」を削除しますか？`))return;
+  const m=loadMST();if(m[key])m[key]=m[key].filter(v=>v!==val);saveMST(m);renderMasters();fillDiagDropdowns();
+}
+function moveMaster(key,idx,dir){
+  const m=loadMST();const arr=m[key];if(!arr)return;
+  const ni=idx+dir;if(ni<0||ni>=arr.length)return;
+  [arr[idx],arr[ni]]=[arr[ni],arr[idx]];saveMST(m);renderMasters();
+}
+function saveHintEdits(){
+  const h=loadHints();
+  ['作業場所','天候','案件','作業時間帯','作業内容','作業員'].forEach(k=>{
+    const el=document.getElementById('hint_'+k);if(el)h[k]=el.value.trim();
+  });
+  saveHints(h);fillDiagDropdowns();alert('ヒントテキストを保存しました');
+}
+
+/* ═══════════════════════════════════════════
+   15. VERSION / SETTINGS
+═══════════════════════════════════════════ */
+function saveVersion(){
+  const v=document.getElementById('cfg_ver').value.trim();
+  if(!v){alert('バージョンを入力してください');return;}
+  saveVer(v);updateSysbar();alert('バージョンを更新しました: '+v);
+}
+function resetData(){
+  if(!confirm('すべてのデータを初期化しますか？この操作は元に戻せません。'))return;
+  localStorage.setItem('aegis_data',JSON.stringify(INIT_DATA));
+  renderDataList();updateSysbar();alert('初期化しました');
+}
+
+/* ═══════════════════════════════════════════
+   LANGUAGE TOGGLE
+═══════════════════════════════════════════ */
+let LANG=loadLang();
+const L={
+  jp:{
+    conditions:'作業条件を選択',place:'📍 作業場所',weather:'🌤 天候',project:'📋 案件',
+    timeSlot:'🕐 作業時間帯',work:'🔧 作業内容',worker:'👷 作業員',
+    diagnose:'⚡ 診断する',major:'想定重大事故',minor:'想定軽度トラブル',measures:'推奨対策',
+    stage2:'詳細解析プロンプト生成',
+    s2desc:'選択条件と社内事故データを組み込んだ高精度プロンプトを生成します。<br>外部AIに貼り付けることで、世界規模のデータに基づく詳細分析が得られます。',
+    genPrompt:'📋 プロンプトを生成・コピー',aiopen:'外部AIで開く',
+    admin:'管理者',logout:'ログアウト'
+  },
+  en:{
+    conditions:'Select Work Conditions',place:'📍 Location',weather:'🌤 Weather',project:'📋 Project',
+    timeSlot:'🕐 Time Slot',work:'🔧 Work Type',worker:'👷 Worker',
+    diagnose:'⚡ ANALYZE',major:'Critical Accident Risk',minor:'Minor Trouble Risk',measures:'Recommended Measures',
+    stage2:'AI Prompt Generator',
+    s2desc:'Generates a high-precision prompt embedding your conditions and internal accident data.<br>Paste into any AI for in-depth global analysis.',
+    genPrompt:'📋 Generate & Copy Prompt',aiopen:'Open in External AI',
+    admin:'Admin',logout:'Logout'
+  }
+};
+function applyLang(){
+  const t=L[LANG];
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.innerHTML=v;};
+  const setTxt=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  set('lbl_conditions',t.conditions);set('lbl_place',t.place);set('lbl_weather',t.weather);
+  set('lbl_project',t.project);set('lbl_time',t.timeSlot);set('lbl_work',t.work);set('lbl_worker',t.worker);
+  set('lbl_major',t.major);set('lbl_minor',t.minor);set('lbl_measures',t.measures);
+  set('lbl_stage2',t.stage2);set('lbl_s2desc',t.s2desc);
+  set('genPromptBtn',t.genPrompt);set('lbl_aiopen',t.aiopen);
+  const diagBtn=document.getElementById('diagnoseBtn');if(diagBtn)diagBtn.textContent=t.diagnose;
+  const adminTxt=document.getElementById('adminNavTxt');if(adminTxt)adminTxt.textContent=t.admin;
+  const logoutTxt=document.getElementById('logoutTxt');if(logoutTxt)logoutTxt.textContent=t.logout;
+  const langBtn=document.getElementById('langBtn');if(langBtn)langBtn.textContent=LANG==='jp'?'EN':'JP';
+}
+function toggleLang(){
+  LANG=LANG==='jp'?'en':'jp';saveLang(LANG);applyLang();fillDiagDropdowns();
+}
+
+/* ═══════════════════════════════════════════
+   UTIL
+═══════════════════════════════════════════ */
+function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+/* INIT */
+loadData();loadMST();loadHints();updateSysbar();
+setTimeout(()=>{applyLang();updateHdrOffset();},0);
+</script>
+</body>
+</html>
