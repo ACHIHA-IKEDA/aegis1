@@ -2001,20 +2001,53 @@ function _showOk(id){const el=document.getElementById(id);if(el){el.style.displa
 function _setSlotHtml(id,html){
   const el=document.getElementById(id);if(!el)return;
   el.innerHTML=html;
-  const s=el.querySelector('svg');if(s){s.style.width='100%';s.style.height='100%';s.style.display='block';}
+  const s=el.querySelector('svg');
+  if(s){
+    // width/height属性とCSSの両方を設定（Safari・一部Chromiumで属性が必須）
+    s.setAttribute('width','100%');
+    s.setAttribute('height','100%');
+    s.style.cssText='width:100%;height:100%;display:block;';
+  }
+}
+// SVGをCanvasでラスタライズしてdataURL(PNG)を返す（ファビコン用）
+function _svgToPngDataUrl(svgText,size,callback){
+  try{
+    const blob=new Blob([svgText],{type:'image/svg+xml'});
+    const url=URL.createObjectURL(blob);
+    const img=new Image();
+    img.onload=()=>{
+      const c=document.createElement('canvas');c.width=size;c.height=size;
+      const ctx=c.getContext('2d');ctx.drawImage(img,0,0,size,size);
+      URL.revokeObjectURL(url);
+      callback(c.toDataURL('image/png'));
+    };
+    img.onerror=()=>{URL.revokeObjectURL(url);callback(null);};
+    img.src=url;
+  }catch(e){callback(null);}
 }
 
 function applyEmblemSq(){
   const svg=localStorage.getItem('aegis_emblem_sq')||DEFAULT_EMBLEM_SQ;
   ['loginEmblemSq','emblemSqMain','emblemSqAdmin'].forEach(id=>_setSlotHtml(id,svg));
-  // ファビコン更新（SVGをdataURLに変換）
+  // SVG favicon（Chrome/Firefox用）
   try{
-    const encoded=svg.replace(/\s+/g,' ').replace(/"/g,"'");
-    const dataUrl='data:image/svg+xml,'+encodeURIComponent(encoded);
-    let link=document.getElementById('faviconLink');
-    if(!link){link=document.createElement('link');link.id='faviconLink';link.rel='icon';link.type='image/svg+xml';document.head.appendChild(link);}
-    link.href=dataUrl;
+    const enc=svg.replace(/\s+/g,' ').replace(/"/g,"'");
+    let lnk=document.getElementById('faviconLink');
+    if(!lnk){lnk=document.createElement('link');lnk.id='faviconLink';lnk.rel='icon';lnk.type='image/svg+xml';document.head.appendChild(lnk);}
+    lnk.href='data:image/svg+xml,'+encodeURIComponent(enc);
   }catch(e){}
+  // PNG favicon（iOS/iPadOS/Android・apple-touch-icon用）
+  _svgToPngDataUrl(svg,192,pngUrl=>{
+    if(!pngUrl)return;
+    // apple-touch-icon
+    let atl=document.getElementById('appleTouchIcon');
+    if(!atl){atl=document.createElement('link');atl.id='appleTouchIcon';atl.rel='apple-touch-icon';document.head.appendChild(atl);}
+    atl.href=pngUrl;
+    // PNG fallback favicon（Android Chrome等）
+    let pngl=document.getElementById('faviconPng');
+    if(!pngl){pngl=document.createElement('link');pngl.id='faviconPng';pngl.rel='icon';pngl.type='image/png';pngl.setAttribute('sizes','192x192');document.head.appendChild(pngl);}
+    pngl.href=pngUrl;
+  });
 }
 function applyLogoRect(){
   const svg=localStorage.getItem('aegis_logo_rect')||DEFAULT_LOGO_RECT;
