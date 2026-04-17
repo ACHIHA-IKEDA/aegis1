@@ -251,14 +251,10 @@ body::after{
 .lv1 .dname{color:var(--d1);}
 .lv2 .dname{color:var(--d2);}
 .lv3 .dname{color:var(--d3);}
-.warn-callout{
-  padding:10px 16px;border-radius:10px;
-  font-size:.9rem;font-weight:700;letter-spacing:.4px;
-  margin-top:6px;display:flex;align-items:center;gap:8px;line-height:1.45;
-}
-.warn-callout.lv1{background:rgba(0,230,118,.08);color:var(--d1);border:1px solid rgba(0,230,118,.25);}
-.warn-callout.lv2{background:rgba(255,171,64,.08);color:var(--d2);border:1px solid rgba(255,171,64,.28);}
-.warn-callout.lv3{background:rgba(255,82,82,.10);color:var(--d3);border:1px solid rgba(255,82,82,.30);}
+.danger-warn{font-size:.84rem;font-weight:700;letter-spacing:.3px;margin-top:7px;line-height:1.5;opacity:.92;}
+.lv1 .danger-warn{color:var(--d1);}
+.lv2 .danger-warn{color:var(--d2);}
+.lv3 .danger-warn{color:var(--d3);}
 
 /* ACCORDION */
 .acc{margin-bottom:8px;border-radius:13px;overflow:hidden;}
@@ -468,7 +464,7 @@ footer b{color:rgba(107,138,173,.75);}
   <div class="login-card">
     <div class="login-logo">
       <!-- Combined emblem + wordmark lockup -->
-      <svg class="login-logo-svg" viewBox="0 0 248 92" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg class="login-logo-svg" viewBox="0 0 292 92" fill="none" xmlns="http://www.w3.org/2000/svg">
         <!-- ── SHIELD ── -->
         <!-- Shield body: flat ACHIHA royal blue -->
         <path d="M40 2 L76 14 L76 54 Q76 82 40 91 Q4 82 4 54 L4 14 Z" fill="#1557B0"/>
@@ -622,7 +618,7 @@ footer b{color:rgba(107,138,173,.75);}
     </div>
   </div>
 
-  <footer><b>Produced by IKEDA | S3SSD | ACHIHA</b></footer>
+  <footer><b>Produced by IKEDA | S3SSD | ACHIHA</b><span id="lastPushMain" style="display:block;font-size:.58rem;color:rgba(107,138,173,.5);margin-top:4px;"></span></footer>
 </div>
 
 <!-- ══════════════════════════════════════════════
@@ -809,6 +805,33 @@ Googleマップリンク:
         <div class="fsec" style="margin-top:24px;">テキストエクスポート</div>
         <p style="font-size:.8rem;color:var(--gr);margin-bottom:12px;">全学習データをテキストファイル（.txt）としてダウンロードします。取込フォーマットと同一形式で出力されます。</p>
         <button class="btn btn-c btn-md" onclick="exportData()">📤 テキストデータとして出力</button>
+        <div class="fsec" style="margin-top:24px;">AIプロンプト編集（解析依頼部分）</div>
+        <p style="font-size:.8rem;color:var(--gr);margin-bottom:10px;">
+          外部AIへ送るプロンプトの「解析依頼」部分を編集できます。<br>
+          <code style="color:var(--y);font-size:.75rem;">{{REASONS}}</code> は「防止策不履行理由」のデータに自動置換されます。
+        </p>
+        <textarea id="cfg_prompt_tail" rows="14" style="width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:9px;color:var(--w);font-size:.72rem;padding:10px;font-family:var(--jp);line-height:1.55;resize:vertical;" placeholder="デフォルトプロンプトを読み込んでから編集してください"></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+          <button class="btn btn-gr btn-sm" onclick="savePromptTail()">保存</button>
+          <button class="btn btn-glass btn-sm" onclick="loadDefaultPromptTail()">デフォルトに戻す</button>
+          <span id="promptSaveOk" style="font-size:.75rem;color:var(--d1);display:none;">✓ 保存しました</span>
+        </div>
+        <div class="fsec" style="margin-top:24px;">エンブレム変更</div>
+        <p style="font-size:.8rem;color:var(--gr);margin-bottom:10px;">
+          SVGファイルをアップロードしてログイン画面・ヘッダーのエンブレムを変更します。
+        </p>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <label class="btn btn-glass btn-sm" style="cursor:pointer;">
+            SVGを選択
+            <input type="file" accept=".svg,image/svg+xml" id="emblemFileInput" style="display:none;" onchange="uploadEmblem(this)">
+          </label>
+          <button class="btn btn-del btn-sm" onclick="resetEmblem()">デフォルトに戻す</button>
+          <span id="emblemUploadOk" style="font-size:.75rem;color:var(--d1);display:none;">✓ 変更しました</span>
+        </div>
+        <div id="emblemPreview" style="margin-top:10px;display:none;">
+          <p style="font-size:.72rem;color:var(--gr);margin-bottom:6px;">プレビュー:</p>
+          <div id="emblemPreviewImg" style="width:80px;height:80px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.04);border-radius:8px;border:1px solid rgba(255,255,255,.08);overflow:hidden;"></div>
+        </div>
         <div class="fsec" style="margin-top:24px;">データ管理</div>
         <p style="font-size:.8rem;color:var(--gr);margin-bottom:12px;">学習データをすべて初期サンプルにリセットします（復元不可）</p>
         <button class="btn btn-del btn-md" onclick="resetData()">⚠️ データを初期化する</button>
@@ -816,7 +839,7 @@ Googleマップリンク:
     </div>
   </div>
 
-  <footer><b>Produced by IKEDA | S3SSD | ACHIHA</b></footer>
+  <footer><b>Produced by IKEDA | S3SSD | ACHIHA</b><span id="lastPushAdmin" style="display:block;font-size:.58rem;color:rgba(107,138,173,.5);margin-top:4px;"></span></footer>
 </div>
 
 <script>
@@ -884,7 +907,7 @@ function nextId(){const d=loadData();return d.length===0?1:Math.max(...d.map(x=>
    3. AUTH
 ═══════════════════════════════════════════ */
 const USERS={'achiha':{pw:'Since1923',role:'user'},'achihaikeda':{pw:'Since1923',role:'admin'}};
-let CU=null;
+let CU=(()=>{try{const s=sessionStorage.getItem('aegis_cu');return s?JSON.parse(s):null;}catch(e){return null;}})();
 
 function doLogin(){
   const id=document.getElementById('li_id').value.trim();
@@ -893,7 +916,7 @@ function doLogin(){
   if(!id||!pw){err.textContent='IDとパスワードを入力してください';return;}
   const u=USERS[id];
   if(!u||u.pw!==pw){err.textContent='IDまたはパスワードが正しくありません';return;}
-  err.textContent='';CU={id,role:u.role};
+  err.textContent='';CU={id,role:u.role};sessionStorage.setItem('aegis_cu',JSON.stringify(CU));
   // 同期できる状態かチェック（GistユーザーとIDが両方揃っているか）
   const canSync=!!getRawGistUrl();
   const proceed=async()=>{
@@ -911,7 +934,7 @@ function doLogin(){
     proceed();
   }
 }
-function doLogout(){CU=null;document.getElementById('li_id').value='';document.getElementById('li_pw').value='';showScreen('loginScreen');}
+function doLogout(){CU=null;sessionStorage.removeItem('aegis_cu');document.getElementById('li_id').value='';document.getElementById('li_pw').value='';showScreen('loginScreen');}
 ['li_pw','li_id'].forEach(id=>document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();}));
 
 /* ═══════════════════════════════════════════
@@ -946,7 +969,13 @@ function updateSysbar(){
   const ver=loadVer();
   ['sbCount','sbCountAdmin'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=cnt;});
   ['sbVer','sbVerAdmin'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=ver;});
+  updateLastPushDisplay();
   requestAnimationFrame(updateHdrOffset);
+}
+function updateLastPushDisplay(){
+  const ts=localStorage.getItem('aegis_last_push');
+  const txt=ts?'最終データ更新: '+new Date(ts).toLocaleString('ja-JP'):'';
+  ['lastPushMain','lastPushAdmin'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=txt;});
 }
 
 function updateHdrOffset(){
@@ -1128,9 +1157,9 @@ function renderResults(major,minor,majorMsr,minorMsr,danger){
        <div class="danger-info">
          <div class="dlbl">DANGER LEVEL ${danger}</div>
          <div class="dname">${lvNames[danger]}</div>
+         <div class="danger-warn">⚠ ${warnText}</div>
        </div>
-     </div>
-     <div class="warn-callout ${lvCls}">⚠ ${warnText}</div>`;
+     </div>`;
 
   document.getElementById('r_major').innerHTML=renderAccordions(major,'h')||'<div class="no-data" style="padding:16px;font-size:.8rem">該当する重大事故データなし</div>';
   document.getElementById('r_minor').innerHTML=renderAccordions(minor,'l')||'<div class="no-data" style="padding:16px;font-size:.8rem">該当する軽度トラブルデータなし</div>';
@@ -1214,6 +1243,61 @@ function formatDT(s){
 /* ═══════════════════════════════════════════
    9. STAGE 2 – AI PROMPT
 ═══════════════════════════════════════════ */
+const DEFAULT_PROMPT_TAIL_JP=`
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+【解析依頼】
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️ 【重要:回答フォーマット・URLルール】
+【URLに関する絶対ルール】
+・実在・アクセス確認済みのURLのみ記載すること。架空URL・不確かなURLの捏造は絶対禁止。
+・ニュース記事・事故報告書・動画など、実在するURLを提示できない情報は項目ごと省くこと。「URL不明」「検索してください」等の代替表記も不可。リンクが出せない事例は記載しない。
+・公式機関サイト（mhlw.go.jp、osha.gov等）のトップURLや公開ページは記載可。特定記事への直リンクが不明な場合は省略。
+
+【回答フォーマット】
+回答の冒頭に必ず「【総合結論・最優先リスク】」セクションを200字以内で設けること。
+現場管理者が最初に読むべき結論・最重要リスク・即座に取るべきアクションを端的にまとめる。
+その後に各詳細項目を記述すること。
+
+上記データをふまえ、以下の各項目について詳細な安全リスク分析レポートを作成してください。
+
+1. 【日本国内の同種事故事例】
+   ・上記条件に類似した国内の重大事故・死亡事故事例（発生年・場所・概要・死傷者数・原因）
+   ・厚生労働省・国土交通省・消防庁等の公式レポート・統計データ（実在するURLのみ記載。例:https://www.mhlw.go.jp/bunya/roudoukijun/anzeneisei.html）
+   ・NHKニュース・日本経済新聞等の報道事例（実在する記事URLのみ記載。URL確認できない記事は省く）
+   ・関連するYouTube動画・ニュース映像・事故解説動画（実在する動画URLのみ記載。例:https://www.youtube.com/watch?v=XXXXX。URL不明な場合は動画タイトル・チャンネル名・検索キーワードのみ提示）
+
+2. 【海外の同種事故事例】
+   ・米国・欧州・アジア等での類似重大事故事例（発生国・年・概要・死傷者数・原因）
+   ・OSHA・ILO・EU-OSHA等の国際機関レポート（実在するURLのみ記載。例:https://www.osha.gov/publications）
+   ・海外ニュース・事故調査報告書（実在する記事・レポートURLのみ記載。URL確認できない記事は省く）
+   ・関連するYouTube動画・海外事故映像・安全教育動画（実在する動画URLのみ記載。URL不明な場合は動画タイトル・チャンネル名・検索キーワードのみ提示）
+
+3. 【防止策不履行の深層分析】
+   ・社内データに記録された不履行理由: {{REASONS}}
+   ・これらの背景にある組織的・心理的・環境的要因の深層分析
+   ・ヒューマンエラー理論（スイスチーズモデル・ハインリッヒの法則等）からの考察
+   ・同様の不履行パターンを根本から解消するための具体的施策
+
+4. 【潜在リスク・見落とし】
+   ・上記条件から想定されるが社内データにない潜在リスク
+   ・軽度トラブルから重大事故へのエスカレーションパターン
+
+5. 【国際安全基準に基づく対策】
+   ・ISO・OSHA・ILO等の国際安全基準・規制（具体的な規格番号を含む）
+   ・業種・作業内容に特化した法規制・ガイドライン
+   ・先進国の安全管理ベストプラクティス事例
+
+6. 【即実践できる安全対策チェックリスト】
+   ・作業前・作業中・作業後の確認事項（箇条書き）
+   ・設備面・教育面・管理面それぞれの対策
+
+根拠となるデータ・統計・情報源を可能な限り含め、現場管理者が明日から使える具体的な内容で回答してください。`;
+
+function getPromptTailJP(rsnTxt){
+  const stored=localStorage.getItem('aegis_prompt_tail_jp');
+  return(stored||DEFAULT_PROMPT_TAIL_JP).replace('{{REASONS}}',rsnTxt);
+}
+
 function genPrompt(){
   const s=lastDiagState;
   const isEn=LANG==='en';
@@ -1333,54 +1417,7 @@ ${cauTxt}
 ■ 防止策が守られなかった主な理由（社内データより）:
 ${rsnTxt}
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-【解析依頼】
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚠️ 【重要:回答フォーマット・URLルール】
-【URLに関する絶対ルール】
-・実在・アクセス確認済みのURLのみ記載すること。架空URL・不確かなURLの捏造は絶対禁止。
-・ニュース記事・事故報告書・動画など、実在するURLを提示できない情報は項目ごと省くこと。「URL不明」「検索してください」等の代替表記も不可。リンクが出せない事例は記載しない。
-・公式機関サイト（mhlw.go.jp、osha.gov等）のトップURLや公開ページは記載可。特定記事への直リンクが不明な場合は省略。
-
-【回答フォーマット】
-回答の冒頭に必ず「【総合結論・最優先リスク】」セクションを200字以内で設けること。
-現場管理者が最初に読むべき結論・最重要リスク・即座に取るべきアクションを端的にまとめる。
-その後に各詳細項目を記述すること。
-
-上記データをふまえ、以下の各項目について詳細な安全リスク分析レポートを作成してください。
-
-1. 【日本国内の同種事故事例】
-   ・上記条件に類似した国内の重大事故・死亡事故事例（発生年・場所・概要・死傷者数・原因）
-   ・厚生労働省・国土交通省・消防庁等の公式レポート・統計データ（実在するURLのみ記載。例:https://www.mhlw.go.jp/bunya/roudoukijun/anzeneisei.html）
-   ・NHKニュース・日本経済新聞等の報道事例（実在する記事URLのみ記載。URL確認できない記事は省く）
-   ・関連するYouTube動画・ニュース映像・事故解説動画（実在する動画URLのみ記載。例:https://www.youtube.com/watch?v=XXXXX。URL不明な場合は動画タイトル・チャンネル名・検索キーワードのみ提示）
-
-2. 【海外の同種事故事例】
-   ・米国・欧州・アジア等での類似重大事故事例（発生国・年・概要・死傷者数・原因）
-   ・OSHA・ILO・EU-OSHA等の国際機関レポート（実在するURLのみ記載。例:https://www.osha.gov/publications）
-   ・海外ニュース・事故調査報告書（実在する記事・レポートURLのみ記載。URL確認できない記事は省く）
-   ・関連するYouTube動画・海外事故映像・安全教育動画（実在する動画URLのみ記載。URL不明な場合は動画タイトル・チャンネル名・検索キーワードのみ提示）
-
-3. 【防止策不履行の深層分析】
-   ・社内データに記録された不履行理由: ${rsnTxt}
-   ・これらの背景にある組織的・心理的・環境的要因の深層分析
-   ・ヒューマンエラー理論（スイスチーズモデル・ハインリッヒの法則等）からの考察
-   ・同様の不履行パターンを根本から解消するための具体的施策
-
-4. 【潜在リスク・見落とし】
-   ・上記条件から想定されるが社内データにない潜在リスク
-   ・軽度トラブルから重大事故へのエスカレーションパターン
-
-5. 【国際安全基準に基づく対策】
-   ・ISO・OSHA・ILO等の国際安全基準・規制（具体的な規格番号を含む）
-   ・業種・作業内容に特化した法規制・ガイドライン
-   ・先進国の安全管理ベストプラクティス事例
-
-6. 【即実践できる安全対策チェックリスト】
-   ・作業前・作業中・作業後の確認事項（箇条書き）
-   ・設備面・教育面・管理面それぞれの対策
-
-根拠となるデータ・統計・情報源を可能な限り含め、現場管理者が明日から使える具体的な内容で回答してください。`;
+` + getPromptTailJP(rsnTxt);
 
   navigator.clipboard.writeText(prompt).then(()=>{
     const ok=document.getElementById('copyOk');ok.classList.add('show');
@@ -1646,7 +1683,10 @@ async function pushToGist(){
       body:JSON.stringify({files:{'aegis_sync.json':{content}}})
     });
     if(!res.ok)throw new Error('HTTP '+res.status);
+    const now=new Date().toISOString();
+    localStorage.setItem('aegis_last_push',now);
     gistStatus('✓ クラウドに保存しました（'+new Date().toLocaleTimeString('ja-JP')+'）','var(--d1)');
+    updateLastPushDisplay();
   }catch(e){
     gistStatus('✗ 保存失敗: '+e.message,'var(--d3)');
   }
@@ -1714,7 +1754,9 @@ async function autoPullFromGist(){
     // Pull先にもGist設定を自動伝播
     if(b.aegis_gist_user)localStorage.setItem('aegis_gist_user',b.aegis_gist_user);
     if(b.aegis_gist_id)localStorage.setItem('aegis_gist_id',b.aegis_gist_id);
+    if(b.exported_at)localStorage.setItem('aegis_last_push',b.exported_at);
     localStorage.setItem('aegis_data_ver',DATA_VER);
+    updateLastPushDisplay();
     return b.aegis_data.length;
   }catch(e){return false;}
 }
@@ -1818,7 +1860,7 @@ function switchTab(t){
     document.getElementById(bmap[k]).classList.toggle('on',k===t);
   });
   if(t==='form')fillAdminDropdowns();
-  if(t==='cfg'){document.getElementById('cfg_ver').value=loadVer();loadGistCfgToForm();}
+  if(t==='cfg'){document.getElementById('cfg_ver').value=loadVer();loadGistCfgToForm();loadPromptTailToForm();const emb=localStorage.getItem('aegis_emblem_svg');if(emb)showEmblemPreview(emb);}
 }
 
 /* ═══════════════════════════════════════════
@@ -1884,6 +1926,92 @@ function saveVersion(){
   if(!v){alert('バージョンを入力してください');return;}
   saveVer(v);updateSysbar();alert('バージョンを更新しました: '+v);
 }
+function savePromptTail(){
+  const val=document.getElementById('cfg_prompt_tail').value;
+  if(val.trim())localStorage.setItem('aegis_prompt_tail_jp',val);
+  else localStorage.removeItem('aegis_prompt_tail_jp');
+  const ok=document.getElementById('promptSaveOk');
+  ok.style.display='inline';setTimeout(()=>ok.style.display='none',2500);
+}
+function loadDefaultPromptTail(){
+  if(!confirm('デフォルトのプロンプトに戻しますか？'))return;
+  localStorage.removeItem('aegis_prompt_tail_jp');
+  document.getElementById('cfg_prompt_tail').value=DEFAULT_PROMPT_TAIL_JP.trim();
+}
+function loadPromptTailToForm(){
+  const ta=document.getElementById('cfg_prompt_tail');
+  if(ta){
+    const stored=localStorage.getItem('aegis_prompt_tail_jp');
+    ta.value=(stored||DEFAULT_PROMPT_TAIL_JP).trim();
+  }
+}
+/* ─ エンブレム ─ */
+function uploadEmblem(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const svg=e.target.result;
+    if(!svg.includes('<svg')&&!svg.includes('<SVG')){alert('有効なSVGファイルを選択してください');return;}
+    localStorage.setItem('aegis_emblem_svg',svg);
+    applyCustomEmblem();
+    const ok=document.getElementById('emblemUploadOk');ok.style.display='inline';setTimeout(()=>ok.style.display='none',2500);
+    showEmblemPreview(svg);
+  };
+  reader.readAsText(file);
+}
+function resetEmblem(){
+  if(!confirm('エンブレムをデフォルトに戻しますか？'))return;
+  localStorage.removeItem('aegis_emblem_svg');
+  applyCustomEmblem();
+  document.getElementById('emblemPreview').style.display='none';
+  document.getElementById('emblemPreviewImg').innerHTML='';
+}
+function showEmblemPreview(svg){
+  const wrap=document.getElementById('emblemPreview');
+  const img=document.getElementById('emblemPreviewImg');
+  if(!wrap||!img)return;
+  wrap.style.display='block';
+  img.innerHTML=svg;
+  const s=img.querySelector('svg');
+  if(s){s.style.width='100%';s.style.height='100%';}
+}
+function applyCustomEmblem(){
+  const svg=localStorage.getItem('aegis_emblem_svg');
+  if(!svg){
+    // restore defaults (reload page)
+    const loginLogo=document.querySelector('.login-logo-svg');
+    const topbarLogo=document.querySelector('.logo-svg');
+    if(loginLogo)loginLogo.style.display='';
+    if(topbarLogo)topbarLogo.style.display='';
+    const customs=document.querySelectorAll('.custom-emblem');
+    customs.forEach(el=>el.remove());
+    return;
+  }
+  // Login screen
+  const loginSvg=document.querySelector('.login-logo-svg');
+  if(loginSvg){
+    const parser=new DOMParser();
+    const doc=parser.parseFromString(svg,'image/svg+xml');
+    const newSvg=doc.querySelector('svg');
+    if(newSvg){
+      newSvg.className.baseVal='login-logo-svg custom-emblem';
+      newSvg.setAttribute('preserveAspectRatio','xMidYMid meet');
+      loginSvg.replaceWith(newSvg);
+    }
+  }
+  // Topbar
+  const topbarSvg=document.querySelector('.logo-svg');
+  if(topbarSvg){
+    const parser=new DOMParser();
+    const doc=parser.parseFromString(svg,'image/svg+xml');
+    const newSvg=doc.querySelector('svg');
+    if(newSvg){
+      newSvg.className.baseVal='logo-svg custom-emblem';
+      topbarSvg.replaceWith(newSvg);
+    }
+  }
+  if(localStorage.getItem('aegis_emblem_svg'))showEmblemPreview(svg);
+}
 function resetData(){
   if(!confirm('すべてのデータを初期化しますか？この操作は元に戻せません。'))return;
   localStorage.setItem('aegis_data',JSON.stringify(INIT_DATA));
@@ -1939,7 +2067,19 @@ function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/<
 
 /* INIT */
 loadData();loadMST();loadHints();updateSysbar();
-setTimeout(()=>{applyLang();updateHdrOffset();},0);
+setTimeout(()=>{
+  applyLang();
+  updateHdrOffset();
+  applyCustomEmblem();
+  // セッション復元: ページ更新後もログイン状態を維持
+  if(CU){
+    const canSync=!!getRawGistUrl();
+    (async()=>{
+      if(canSync){showSyncBanner(true);await autoPullFromGist();showSyncBanner(false);}
+      if(CU.role==='admin') showAdmin(); else showMain();
+    })();
+  }
+},0);
 </script>
 </body>
 </html>
