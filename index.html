@@ -256,6 +256,17 @@ body::after{
 .lv2 .danger-warn{color:var(--d2);}
 .lv3 .danger-warn{color:var(--d3);}
 
+/* ── LOGIN EMBLEM ROW ── */
+.login-emblem-row{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:14px;}
+.login-emblem-sq{width:60px;height:70px;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.login-emblem-sq svg{width:100%;height:100%;}
+.login-logo-rect{flex:1;max-width:190px;height:70px;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.login-logo-rect svg{width:100%;height:100%;}
+/* ── FOOTER LOGO STRIP ── */
+.footer-logos-strip{display:flex;justify-content:center;align-items:center;gap:22px;padding:10px 20px 2px;flex-wrap:wrap;}
+.footer-logo-slot{height:34px;max-width:140px;overflow:hidden;display:flex;align-items:center;justify-content:center;opacity:.6;}
+.footer-logo-slot svg,.footer-logo-slot img{max-width:100%;max-height:100%;object-fit:contain;}
+
 /* ACCORDION */
 .acc{margin-bottom:8px;border-radius:13px;overflow:hidden;}
 .acc-hdr{
@@ -463,34 +474,11 @@ footer b{color:rgba(107,138,173,.75);}
 <div id="loginScreen" class="screen" style="display:flex">
   <div class="login-card">
     <div class="login-logo">
-      <!-- Combined emblem + wordmark lockup -->
-      <svg class="login-logo-svg" viewBox="0 0 292 92" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <!-- ── SHIELD ── -->
-        <!-- Shield body: flat ACHIHA royal blue -->
-        <path d="M40 2 L76 14 L76 54 Q76 82 40 91 Q4 82 4 54 L4 14 Z" fill="#1557B0"/>
-        <!-- White V-stripe (truck livery motif), clipped to shield -->
-        <g clip-path="url(#sc_logo)">
-          <polygon points="62,2 76,14 76,48 34,91 14,91 50,2" fill="rgba(255,255,255,0.30)"/>
-          <polygon points="52,2 64,2 28,91 16,91" fill="rgba(255,255,255,0.13)"/>
-        </g>
-        <!-- Yellow crown band -->
-        <path d="M40 2 L76 14 L71 17.5 L40 8 L9 17.5 L4 14 Z" fill="#FFD600"/>
-        <!-- Yellow outer border -->
-        <path d="M40 2 L76 14 L76 54 Q76 82 40 91 Q4 82 4 54 L4 14 Z" fill="none" stroke="#FFD600" stroke-width="1.5" opacity="0.65"/>
-        <!-- Inner glass rim -->
-        <path d="M40 10 L68 21 L68 54 Q68 75 40 83 Q12 75 12 54 L12 21 Z" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="0.9"/>
-        <!-- White upward chevron (early-warning symbol) -->
-        <polyline points="20,58 40,36 60,58" fill="none" stroke="white" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
-        <!-- Yellow secondary chevron (alert accent) -->
-        <polyline points="27,71 40,56 53,71" fill="none" stroke="#FFD600" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-        <!-- Yellow bottom foot-line -->
-        <path d="M4 72 Q4 82 40 91 Q76 82 76 72 L76 76 Q76 85 40 91 Q4 85 4 76 Z" fill="#FFD600" opacity="0.50"/>
-        <!-- ── WORDMARK ── -->
-        <!-- AEGIS text with gold-cyan gradient -->
-        <text x="90" y="63" font-family="'DIN Condensed','D-DIN','Barlow Condensed','Arial Narrow',sans-serif" font-weight="900" font-size="54" letter-spacing="5" fill="url(#lg)">AEGIS</text>
-        <!-- Tagline -->
-        <text x="91" y="78" font-family="'DIN Condensed','Arial Narrow',sans-serif" font-weight="400" font-size="8.5" letter-spacing="2.2" fill="rgba(107,138,173,0.65)">EARLY-WARNING SYSTEM</text>
-      </svg>
+      <!-- Emblem (square) + Wordmark (rect) -->
+      <div class="login-emblem-row">
+        <div id="loginEmblemSq" class="login-emblem-sq"></div>
+        <div id="loginLogoRect" class="login-logo-rect"></div>
+      </div>
       <div class="login-sub">Achiha Early-warning &amp; Guidance Intelligence System</div>
       <div class="login-tag">安全管理・事故予測システム</div>
     </div>
@@ -522,19 +510,7 @@ footer b{color:rgba(107,138,173,.75);}
   <div class="topbar" id="mainTopbar">
     <div class="bar-inner">
       <div class="logo-wrap">
-        <svg class="logo-svg" viewBox="0 0 80 92" fill="none">
-          <path d="M40 2 L76 14 L76 54 Q76 82 40 91 Q4 82 4 54 L4 14 Z" fill="#1557B0"/>
-          <g clip-path="url(#sc_logo)">
-            <polygon points="62,2 76,14 76,48 34,91 14,91 50,2" fill="rgba(255,255,255,0.30)"/>
-            <polygon points="52,2 64,2 28,91 16,91" fill="rgba(255,255,255,0.13)"/>
-          </g>
-          <path d="M40 2 L76 14 L71 17.5 L40 8 L9 17.5 L4 14 Z" fill="#FFD600"/>
-          <path d="M40 2 L76 14 L76 54 Q76 82 40 91 Q4 82 4 54 L4 14 Z" fill="none" stroke="#FFD600" stroke-width="1.5" opacity="0.65"/>
-          <path d="M40 10 L68 21 L68 54 Q68 75 40 83 Q12 75 12 54 L12 21 Z" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="0.9"/>
-          <polyline points="20,58 40,36 60,58" fill="none" stroke="white" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
-          <polyline points="27,71 40,56 53,71" fill="none" stroke="#FFD600" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M4 72 Q4 82 40 91 Q76 82 76 72 L76 76 Q76 85 40 91 Q4 85 4 76 Z" fill="#FFD600" opacity="0.50"/>
-        </svg>
+        <div id="emblemSqMain" class="logo-svg" style="overflow:hidden;display:flex;align-items:center;justify-content:center;"></div>
         <div class="logo-brand">
           <div class="logo-txt">AEGIS</div>
           <div class="logo-sub">Achiha Early-warning &amp; Guidance Intelligence System</div>
@@ -618,6 +594,11 @@ footer b{color:rgba(107,138,173,.75);}
     </div>
   </div>
 
+  <div class="footer-logos-strip">
+    <div class="footer-logo-slot" id="fls_main_0"></div>
+    <div class="footer-logo-slot" id="fls_main_1"></div>
+    <div class="footer-logo-slot" id="fls_main_2"></div>
+  </div>
   <footer><b>Produced by IKEDA | S3SSD | ACHIHA</b><span id="lastPushMain" style="display:block;font-size:.58rem;color:rgba(107,138,173,.5);margin-top:4px;"></span></footer>
 </div>
 
@@ -628,19 +609,7 @@ footer b{color:rgba(107,138,173,.75);}
   <div class="topbar" id="adminTopbar">
     <div class="bar-inner">
       <div class="logo-wrap">
-        <svg class="logo-svg" viewBox="0 0 80 92" fill="none">
-          <path d="M40 2 L76 14 L76 54 Q76 82 40 91 Q4 82 4 54 L4 14 Z" fill="#1557B0"/>
-          <g clip-path="url(#sc_logo)">
-            <polygon points="62,2 76,14 76,48 34,91 14,91 50,2" fill="rgba(255,255,255,0.30)"/>
-            <polygon points="52,2 64,2 28,91 16,91" fill="rgba(255,255,255,0.13)"/>
-          </g>
-          <path d="M40 2 L76 14 L71 17.5 L40 8 L9 17.5 L4 14 Z" fill="#FFD600"/>
-          <path d="M40 2 L76 14 L76 54 Q76 82 40 91 Q4 82 4 54 L4 14 Z" fill="none" stroke="#FFD600" stroke-width="1.5" opacity="0.65"/>
-          <path d="M40 10 L68 21 L68 54 Q68 75 40 83 Q12 75 12 54 L12 21 Z" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="0.9"/>
-          <polyline points="20,58 40,36 60,58" fill="none" stroke="white" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
-          <polyline points="27,71 40,56 53,71" fill="none" stroke="#FFD600" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M4 72 Q4 82 40 91 Q76 82 76 72 L76 76 Q76 85 40 91 Q4 85 4 76 Z" fill="#FFD600" opacity="0.50"/>
-        </svg>
+        <div id="emblemSqAdmin" class="logo-svg" style="overflow:hidden;display:flex;align-items:center;justify-content:center;"></div>
         <div class="logo-brand">
           <div class="logo-txt" style="font-size:1.1rem;letter-spacing:4px;">AEGIS <span style="color:var(--gr);font-size:.65rem;letter-spacing:2px;">ADMIN</span></div>
         </div>
@@ -816,22 +785,67 @@ Googleマップリンク:
           <button class="btn btn-glass btn-sm" onclick="loadDefaultPromptTail()">デフォルトに戻す</button>
           <span id="promptSaveOk" style="font-size:.75rem;color:var(--d1);display:none;">✓ 保存しました</span>
         </div>
-        <div class="fsec" style="margin-top:24px;">エンブレム変更</div>
-        <p style="font-size:.8rem;color:var(--gr);margin-bottom:10px;">
-          SVGファイルをアップロードしてログイン画面・ヘッダーのエンブレムを変更します。
-        </p>
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-          <label class="btn btn-glass btn-sm" style="cursor:pointer;">
-            SVGを選択
-            <input type="file" accept=".svg,image/svg+xml" id="emblemFileInput" style="display:none;" onchange="uploadEmblem(this)">
-          </label>
-          <button class="btn btn-del btn-sm" onclick="resetEmblem()">デフォルトに戻す</button>
-          <span id="emblemUploadOk" style="font-size:.75rem;color:var(--d1);display:none;">✓ 変更しました</span>
+        <div class="fsec" style="margin-top:24px;">🎨 ビジュアル編集</div>
+
+        <!-- 正方形エンブレム -->
+        <div style="background:rgba(255,255,255,.03);border-radius:10px;padding:14px;margin-bottom:10px;border:1px solid rgba(255,255,255,.07);">
+          <div style="font-size:.72rem;color:var(--c);letter-spacing:2px;font-family:var(--din);margin-bottom:5px;">■ 正方形エンブレム（シールド・シンボルマーク）</div>
+          <div style="font-size:.7rem;color:var(--gr);margin-bottom:9px;line-height:1.6;">
+            表示場所: ログイン画面左・ヘッダー左（全画面）<br>
+            推奨サイズ: <b style="color:rgba(255,255,255,.7);">80 × 80 px 以上（正方形）</b>　形式: <b style="color:var(--y);">SVG</b><br>
+            クラウド同期: ✓ Push すると全デバイスに配信されます
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+            <label class="btn btn-glass btn-sm" style="cursor:pointer;">SVG を選択<input type="file" accept=".svg,image/svg+xml" style="display:none;" onchange="uploadEmblemSq(this)"></label>
+            <button class="btn btn-del btn-sm" onclick="resetEmblemSq()">デフォルトに戻す</button>
+            <span id="emblemSqOk" style="font-size:.75rem;color:var(--d1);display:none;">✓ 変更しました</span>
+          </div>
+          <div id="prevEmblemSq" style="display:none;width:60px;height:70px;overflow:hidden;background:rgba(255,255,255,.04);border-radius:8px;border:1px solid rgba(255,255,255,.09);"></div>
         </div>
-        <div id="emblemPreview" style="margin-top:10px;display:none;">
-          <p style="font-size:.72rem;color:var(--gr);margin-bottom:6px;">プレビュー:</p>
-          <div id="emblemPreviewImg" style="width:80px;height:80px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.04);border-radius:8px;border:1px solid rgba(255,255,255,.08);overflow:hidden;"></div>
+
+        <!-- 横長ロゴ -->
+        <div style="background:rgba(255,255,255,.03);border-radius:10px;padding:14px;margin-bottom:10px;border:1px solid rgba(255,255,255,.07);">
+          <div style="font-size:.72rem;color:var(--c);letter-spacing:2px;font-family:var(--din);margin-bottom:5px;">■ 横長ロゴ（ワードマーク）</div>
+          <div style="font-size:.7rem;color:var(--gr);margin-bottom:9px;line-height:1.6;">
+            表示場所: ログイン画面（正方形エンブレムの右隣）<br>
+            推奨サイズ: <b style="color:rgba(255,255,255,.7);">200 × 60 px（横長）</b>　形式: <b style="color:var(--y);">SVG</b><br>
+            クラウド同期: ✓ Push すると全デバイスに配信されます
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+            <label class="btn btn-glass btn-sm" style="cursor:pointer;">SVG を選択<input type="file" accept=".svg,image/svg+xml" style="display:none;" onchange="uploadLogoRect(this)"></label>
+            <button class="btn btn-del btn-sm" onclick="resetLogoRect()">デフォルトに戻す</button>
+            <span id="logoRectOk" style="font-size:.75rem;color:var(--d1);display:none;">✓ 変更しました</span>
+          </div>
+          <div id="prevLogoRect" style="display:none;height:50px;overflow:hidden;background:rgba(255,255,255,.04);border-radius:8px;border:1px solid rgba(255,255,255,.09);"></div>
         </div>
+
+        <!-- フッターロゴ -->
+        <div style="background:rgba(255,255,255,.03);border-radius:10px;padding:14px;margin-bottom:10px;border:1px solid rgba(255,255,255,.07);">
+          <div style="font-size:.72rem;color:var(--c);letter-spacing:2px;font-family:var(--din);margin-bottom:5px;">■ フッターロゴ（最大 3 つ）</div>
+          <div style="font-size:.7rem;color:var(--gr);margin-bottom:9px;line-height:1.6;">
+            表示場所: 全画面の最下段・横並び<br>
+            推奨サイズ: <b style="color:rgba(255,255,255,.7);">140 × 40 px（横長）</b>　形式: <b style="color:var(--y);">SVG / PNG / JPEG</b><br>
+            クラウド同期: ✓ Push すると全デバイスに配信されます（SVG のみ）
+          </div>
+          <div id="footerLogoEditors"></div>
+        </div>
+
+        <!-- 広告バナー -->
+        <div style="background:rgba(255,255,255,.03);border-radius:10px;padding:14px;margin-bottom:10px;border:1px solid rgba(255,255,255,.07);">
+          <div style="font-size:.72rem;color:var(--c);letter-spacing:2px;font-family:var(--din);margin-bottom:5px;">■ 広告バナー（300 × 250 px）</div>
+          <div style="font-size:.7rem;color:var(--gr);margin-bottom:9px;line-height:1.6;">
+            表示場所: 画面右下（固定・邪魔にならない位置）<br>
+            推奨サイズ: <b style="color:rgba(255,255,255,.7);">300 × 250 px</b>　形式: <b style="color:var(--y);">JPEG / PNG</b><br>
+            複数登録すると <b style="color:rgba(255,255,255,.7);">5 秒ごとにランダム切替</b>　※ローカル保存のみ（クラウド同期なし）
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+            <label class="btn btn-glass btn-sm" style="cursor:pointer;">画像を追加（複数可）<input type="file" accept="image/jpeg,image/jpg,image/png" multiple style="display:none;" onchange="addAdImages(this)"></label>
+            <button class="btn btn-del btn-sm" onclick="clearAllAds()">全削除</button>
+            <span id="adUploadOk" style="font-size:.75rem;color:var(--d1);display:none;">✓ 追加しました</span>
+          </div>
+          <div id="adThumbnails" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+        </div>
+
         <div class="fsec" style="margin-top:24px;">データ管理</div>
         <p style="font-size:.8rem;color:var(--gr);margin-bottom:12px;">学習データをすべて初期サンプルにリセットします（復元不可）</p>
         <button class="btn btn-del btn-md" onclick="resetData()">⚠️ データを初期化する</button>
@@ -839,7 +853,23 @@ Googleマップリンク:
     </div>
   </div>
 
+  <div class="footer-logos-strip">
+    <div class="footer-logo-slot" id="fls_admin_0"></div>
+    <div class="footer-logo-slot" id="fls_admin_1"></div>
+    <div class="footer-logo-slot" id="fls_admin_2"></div>
+  </div>
   <footer><b>Produced by IKEDA | S3SSD | ACHIHA</b><span id="lastPushAdmin" style="display:block;font-size:.58rem;color:rgba(107,138,173,.5);margin-top:4px;"></span></footer>
+</div>
+
+<!-- AD BANNER (fixed bottom-right) -->
+<div id="adBannerWrap" style="display:none;position:fixed;bottom:0;right:0;z-index:60;padding:8px;pointer-events:auto;">
+  <div style="position:relative;">
+    <div style="font-size:.5rem;color:rgba(107,138,173,.3);text-align:right;margin-bottom:2px;letter-spacing:1px;font-family:var(--din);">AD</div>
+    <div style="width:300px;height:250px;overflow:hidden;border-radius:6px;border:1px solid rgba(255,255,255,.06);background:rgba(0,0,0,.5);">
+      <img id="adBannerImg" style="width:100%;height:100%;object-fit:cover;display:block;" src="">
+    </div>
+    <button onclick="closeAdBanner()" style="position:absolute;top:14px;right:-8px;width:20px;height:20px;border-radius:50%;background:rgba(15,20,45,.9);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);font-size:.6rem;cursor:pointer;line-height:20px;text-align:center;padding:0;">✕</button>
+  </div>
 </div>
 
 <script>
@@ -1660,7 +1690,7 @@ function gistStatus(msg,color){
   if(el){el.textContent=msg;el.style.color=color||'var(--gr)';}
 }
 function buildSyncBundle(){
-  return{
+  const b={
     aegis_data:loadData(),
     aegis_mst:loadMST(),
     aegis_hints:loadHints(),
@@ -1670,6 +1700,11 @@ function buildSyncBundle(){
     aegis_gist_id:localStorage.getItem('aegis_gist_id')||'',
     exported_at:new Date().toISOString()
   };
+  // SVGビジュアルアセット（サイズ小・同期対象）
+  const esq=localStorage.getItem('aegis_emblem_sq');if(esq)b.aegis_emblem_sq=esq;
+  const lr=localStorage.getItem('aegis_logo_rect');if(lr)b.aegis_logo_rect=lr;
+  const fl=localStorage.getItem('aegis_footer_logos');if(fl)b.aegis_footer_logos=fl;
+  return b;
 }
 async function pushToGist(){
   const{token,gistId}=loadGistCfg();
@@ -1755,8 +1790,12 @@ async function autoPullFromGist(){
     if(b.aegis_gist_user)localStorage.setItem('aegis_gist_user',b.aegis_gist_user);
     if(b.aegis_gist_id)localStorage.setItem('aegis_gist_id',b.aegis_gist_id);
     if(b.exported_at)localStorage.setItem('aegis_last_push',b.exported_at);
+    if(b.aegis_emblem_sq)localStorage.setItem('aegis_emblem_sq',b.aegis_emblem_sq);
+    if(b.aegis_logo_rect)localStorage.setItem('aegis_logo_rect',b.aegis_logo_rect);
+    if(b.aegis_footer_logos)localStorage.setItem('aegis_footer_logos',b.aegis_footer_logos);
     localStorage.setItem('aegis_data_ver',DATA_VER);
     updateLastPushDisplay();
+    applyAllVisuals();
     return b.aegis_data.length;
   }catch(e){return false;}
 }
@@ -1860,7 +1899,13 @@ function switchTab(t){
     document.getElementById(bmap[k]).classList.toggle('on',k===t);
   });
   if(t==='form')fillAdminDropdowns();
-  if(t==='cfg'){document.getElementById('cfg_ver').value=loadVer();loadGistCfgToForm();loadPromptTailToForm();const emb=localStorage.getItem('aegis_emblem_svg');if(emb)showEmblemPreview(emb);}
+  if(t==='cfg'){
+    document.getElementById('cfg_ver').value=loadVer();
+    loadGistCfgToForm();loadPromptTailToForm();
+    renderFooterLogoEditors();renderAdThumbnails();
+    const esq=localStorage.getItem('aegis_emblem_sq');if(esq)_showPreview('prevEmblemSq',esq);
+    const lr=localStorage.getItem('aegis_logo_rect');if(lr)_showPreview('prevLogoRect',lr);
+  }
 }
 
 /* ═══════════════════════════════════════════
@@ -1945,72 +1990,173 @@ function loadPromptTailToForm(){
     ta.value=(stored||DEFAULT_PROMPT_TAIL_JP).trim();
   }
 }
-/* ─ エンブレム ─ */
-function uploadEmblem(input){
-  const file=input.files[0];if(!file)return;
-  const reader=new FileReader();
-  reader.onload=e=>{
+/* ─ VISUAL ASSETS ─ */
+const DEFAULT_EMBLEM_SQ=`<svg viewBox="0 0 80 92" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block;"><path d="M40 2 L76 14 L76 54 Q76 82 40 91 Q4 82 4 54 L4 14 Z" fill="#1557B0"/><polygon points="62,2 76,14 76,48 34,91 14,91 50,2" fill="rgba(255,255,255,0.30)"/><polygon points="52,2 64,2 28,91 16,91" fill="rgba(255,255,255,0.13)"/><path d="M40 2 L76 14 L71 17.5 L40 8 L9 17.5 L4 14 Z" fill="#FFD600"/><path d="M40 2 L76 14 L76 54 Q76 82 40 91 Q4 82 4 54 L4 14 Z" fill="none" stroke="#FFD600" stroke-width="1.5" opacity="0.65"/><path d="M40 10 L68 21 L68 54 Q68 75 40 83 Q12 75 12 54 L12 21 Z" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="0.9"/><polyline points="20,58 40,36 60,58" fill="none" stroke="white" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="27,71 40,56 53,71" fill="none" stroke="#FFD600" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 72 Q4 82 40 91 Q76 82 76 72 L76 76 Q76 85 40 91 Q4 85 4 76 Z" fill="#FFD600" opacity="0.50"/></svg>`;
+const DEFAULT_LOGO_RECT=`<svg viewBox="0 0 196 78" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block;"><defs><linearGradient id="wm_lg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#f5c518"/><stop offset="45%" stop-color="#ffe066"/><stop offset="100%" stop-color="#00d4ff"/></linearGradient></defs><text x="2" y="58" font-family="'DIN Condensed','D-DIN','Barlow Condensed','Arial Narrow',sans-serif" font-weight="900" font-size="54" letter-spacing="5" fill="url(#wm_lg)">AEGIS</text><text x="3" y="73" font-family="'DIN Condensed','Arial Narrow',sans-serif" font-weight="400" font-size="8.5" letter-spacing="2.2" fill="rgba(107,138,173,0.65)">EARLY-WARNING SYSTEM</text></svg>`;
+
+function _showOk(id){const el=document.getElementById(id);if(el){el.style.display='inline';setTimeout(()=>el.style.display='none',2500);}}
+function _setSlotHtml(id,html){
+  const el=document.getElementById(id);if(!el)return;
+  el.innerHTML=html;
+  const s=el.querySelector('svg');if(s){s.style.width='100%';s.style.height='100%';s.style.display='block';}
+}
+
+function applyEmblemSq(){
+  const svg=localStorage.getItem('aegis_emblem_sq')||DEFAULT_EMBLEM_SQ;
+  ['loginEmblemSq','emblemSqMain','emblemSqAdmin'].forEach(id=>_setSlotHtml(id,svg));
+}
+function applyLogoRect(){
+  const svg=localStorage.getItem('aegis_logo_rect')||DEFAULT_LOGO_RECT;
+  _setSlotHtml('loginLogoRect',svg);
+}
+function applyFooterLogos(){
+  const logos=_loadFooterLogos();
+  for(let i=0;i<3;i++){
+    const item=logos[i]||null;
+    ['main','admin'].forEach(sc=>{
+      const slot=document.getElementById(`fls_${sc}_${i}`);
+      if(!slot)return;
+      if(!item){slot.innerHTML='';return;}
+      if(item.t==='svg'){
+        slot.innerHTML=item.d;
+        const s=slot.querySelector('svg');if(s){s.style.width='100%';s.style.height='100%';}
+      }else{
+        slot.innerHTML=`<img src="${item.d}" style="max-width:100%;max-height:100%;object-fit:contain;">`;
+      }
+    });
+  }
+}
+function applyAllVisuals(){applyEmblemSq();applyLogoRect();applyFooterLogos();initAdBanner();}
+
+/* ─ Square emblem upload/reset ─ */
+function uploadEmblemSq(input){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();r.readAsText(f);
+  r.onload=e=>{
     const svg=e.target.result;
     if(!svg.includes('<svg')&&!svg.includes('<SVG')){alert('有効なSVGファイルを選択してください');return;}
-    localStorage.setItem('aegis_emblem_svg',svg);
-    applyCustomEmblem();
-    const ok=document.getElementById('emblemUploadOk');ok.style.display='inline';setTimeout(()=>ok.style.display='none',2500);
-    showEmblemPreview(svg);
+    localStorage.setItem('aegis_emblem_sq',svg);
+    applyEmblemSq();
+    _showPreview('prevEmblemSq',svg);
+    _showOk('emblemSqOk');
   };
-  reader.readAsText(file);
 }
-function resetEmblem(){
+function resetEmblemSq(){
   if(!confirm('エンブレムをデフォルトに戻しますか？'))return;
-  localStorage.removeItem('aegis_emblem_svg');
-  applyCustomEmblem();
-  document.getElementById('emblemPreview').style.display='none';
-  document.getElementById('emblemPreviewImg').innerHTML='';
+  localStorage.removeItem('aegis_emblem_sq');
+  applyEmblemSq();
+  const p=document.getElementById('prevEmblemSq');if(p){p.innerHTML='';p.style.display='none';}
 }
-function showEmblemPreview(svg){
-  const wrap=document.getElementById('emblemPreview');
-  const img=document.getElementById('emblemPreviewImg');
-  if(!wrap||!img)return;
-  wrap.style.display='block';
-  img.innerHTML=svg;
-  const s=img.querySelector('svg');
-  if(s){s.style.width='100%';s.style.height='100%';}
+
+/* ─ Rect logo upload/reset ─ */
+function uploadLogoRect(input){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();r.readAsText(f);
+  r.onload=e=>{
+    const svg=e.target.result;
+    if(!svg.includes('<svg')&&!svg.includes('<SVG')){alert('有効なSVGファイルを選択してください');return;}
+    localStorage.setItem('aegis_logo_rect',svg);
+    applyLogoRect();
+    _showPreview('prevLogoRect',svg);
+    _showOk('logoRectOk');
+  };
 }
-function applyCustomEmblem(){
-  const svg=localStorage.getItem('aegis_emblem_svg');
-  if(!svg){
-    // restore defaults (reload page)
-    const loginLogo=document.querySelector('.login-logo-svg');
-    const topbarLogo=document.querySelector('.logo-svg');
-    if(loginLogo)loginLogo.style.display='';
-    if(topbarLogo)topbarLogo.style.display='';
-    const customs=document.querySelectorAll('.custom-emblem');
-    customs.forEach(el=>el.remove());
-    return;
-  }
-  // Login screen
-  const loginSvg=document.querySelector('.login-logo-svg');
-  if(loginSvg){
-    const parser=new DOMParser();
-    const doc=parser.parseFromString(svg,'image/svg+xml');
-    const newSvg=doc.querySelector('svg');
-    if(newSvg){
-      newSvg.className.baseVal='login-logo-svg custom-emblem';
-      newSvg.setAttribute('preserveAspectRatio','xMidYMid meet');
-      loginSvg.replaceWith(newSvg);
-    }
-  }
-  // Topbar
-  const topbarSvg=document.querySelector('.logo-svg');
-  if(topbarSvg){
-    const parser=new DOMParser();
-    const doc=parser.parseFromString(svg,'image/svg+xml');
-    const newSvg=doc.querySelector('svg');
-    if(newSvg){
-      newSvg.className.baseVal='logo-svg custom-emblem';
-      topbarSvg.replaceWith(newSvg);
-    }
-  }
-  if(localStorage.getItem('aegis_emblem_svg'))showEmblemPreview(svg);
+function resetLogoRect(){
+  if(!confirm('ロゴをデフォルトに戻しますか？'))return;
+  localStorage.removeItem('aegis_logo_rect');
+  applyLogoRect();
+  const p=document.getElementById('prevLogoRect');if(p){p.innerHTML='';p.style.display='none';}
+}
+function _showPreview(id,html){
+  const el=document.getElementById(id);if(!el)return;
+  el.style.display='block';el.innerHTML=html;
+  const s=el.querySelector('svg');if(s){s.style.width='100%';s.style.height='100%';s.style.display='block';}
+}
+
+/* ─ Footer logos ─ */
+function _loadFooterLogos(){try{return JSON.parse(localStorage.getItem('aegis_footer_logos'))||[null,null,null];}catch(e){return[null,null,null];}}
+function _saveFooterLogos(arr){localStorage.setItem('aegis_footer_logos',JSON.stringify(arr));}
+function uploadFooterLogo(input,idx){
+  const f=input.files[0];if(!f)return;
+  const isSvg=f.type==='image/svg+xml'||f.name.endsWith('.svg');
+  const r=new FileReader();
+  if(isSvg)r.readAsText(f);else r.readAsDataURL(f);
+  r.onload=e=>{
+    const logos=_loadFooterLogos();
+    logos[idx]={t:isSvg?'svg':'img',d:e.target.result};
+    _saveFooterLogos(logos);applyFooterLogos();renderFooterLogoEditors();
+  };
+}
+function deleteFooterLogo(idx){
+  const logos=_loadFooterLogos();logos[idx]=null;
+  _saveFooterLogos(logos);applyFooterLogos();renderFooterLogoEditors();
+}
+function renderFooterLogoEditors(){
+  const logos=_loadFooterLogos();
+  const wrap=document.getElementById('footerLogoEditors');if(!wrap)return;
+  wrap.innerHTML=[0,1,2].map(i=>{
+    const item=logos[i];
+    const prev=item?(item.t==='svg'
+      ?`<div style="height:30px;overflow:hidden;">${item.d}</div>`
+      :`<img src="${item.d}" style="height:30px;object-fit:contain;">`
+    ):`<span style="font-size:.68rem;color:var(--gr);">未設定</span>`;
+    return`<div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;padding:8px;background:rgba(255,255,255,.03);border-radius:8px;border:1px solid rgba(255,255,255,.06);">
+      <span style="font-size:.7rem;color:var(--gr);width:38px;flex-shrink:0;">ロゴ${i+1}</span>
+      <div style="flex:1;height:34px;overflow:hidden;display:flex;align-items:center;">${prev}</div>
+      <label class="btn btn-glass btn-sm" style="cursor:pointer;flex-shrink:0;">変更<input type="file" accept=".svg,image/svg+xml,image/png,image/jpeg" style="display:none;" onchange="uploadFooterLogo(this,${i})"></label>
+      ${item?`<button class="btn btn-del btn-sm" onclick="deleteFooterLogo(${i})">削除</button>`:''}
+    </div>`;
+  }).join('');
+}
+
+/* ─ Ad Banner ─ */
+let _adTimer=null,_adClosed=false;
+function _loadAds(){try{return JSON.parse(localStorage.getItem('aegis_ads'))||[];}catch(e){return[];}}
+function _saveAds(arr){localStorage.setItem('aegis_ads',JSON.stringify(arr));}
+function initAdBanner(){
+  if(_adClosed)return;
+  const ads=_loadAds();
+  const w=document.getElementById('adBannerWrap');
+  if(!ads.length){if(w)w.style.display='none';if(_adTimer){clearInterval(_adTimer);_adTimer=null;}return;}
+  if(w)w.style.display='block';
+  _rotateAd();
+  if(_adTimer)clearInterval(_adTimer);
+  _adTimer=setInterval(_rotateAd,5000);
+}
+function _rotateAd(){
+  const ads=_loadAds();if(!ads.length)return;
+  const img=document.getElementById('adBannerImg');if(!img)return;
+  img.src=ads[Math.floor(Math.random()*ads.length)];
+}
+function closeAdBanner(){
+  const w=document.getElementById('adBannerWrap');if(w)w.style.display='none';
+  if(_adTimer){clearInterval(_adTimer);_adTimer=null;}
+  _adClosed=true;
+}
+function addAdImages(input){
+  const files=Array.from(input.files);if(!files.length)return;
+  const ads=_loadAds();let loaded=0;
+  files.forEach(f=>{
+    const r=new FileReader();r.readAsDataURL(f);
+    r.onload=e=>{
+      ads.push(e.target.result);loaded++;
+      if(loaded===files.length){_saveAds(ads);_adClosed=false;initAdBanner();renderAdThumbnails();_showOk('adUploadOk');}
+    };
+  });
+}
+function removeAdImage(idx){
+  const ads=_loadAds();ads.splice(idx,1);_saveAds(ads);initAdBanner();renderAdThumbnails();
+}
+function clearAllAds(){
+  if(!confirm('広告画像をすべて削除しますか？'))return;
+  localStorage.removeItem('aegis_ads');initAdBanner();renderAdThumbnails();
+}
+function renderAdThumbnails(){
+  const ads=_loadAds();
+  const wrap=document.getElementById('adThumbnails');if(!wrap)return;
+  wrap.innerHTML=ads.length===0
+    ?`<span style="font-size:.7rem;color:var(--gr);">画像なし</span>`
+    :ads.map((src,i)=>`<div style="position:relative;"><img src="${src}" style="width:70px;height:58px;object-fit:cover;border-radius:6px;border:1px solid rgba(255,255,255,.1);"><button onclick="removeAdImage(${i})" style="position:absolute;top:-5px;right:-5px;width:18px;height:18px;border-radius:50%;background:rgba(200,40,40,.9);border:none;color:#fff;font-size:.58rem;cursor:pointer;line-height:18px;text-align:center;padding:0;">✕</button></div>`).join('');
 }
 function resetData(){
   if(!confirm('すべてのデータを初期化しますか？この操作は元に戻せません。'))return;
@@ -2070,7 +2216,7 @@ loadData();loadMST();loadHints();updateSysbar();
 setTimeout(()=>{
   applyLang();
   updateHdrOffset();
-  applyCustomEmblem();
+  applyAllVisuals();
   // セッション復元: ページ更新後もログイン状態を維持
   if(CU){
     const canSync=!!getRawGistUrl();
